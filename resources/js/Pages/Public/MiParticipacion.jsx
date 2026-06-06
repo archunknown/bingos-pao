@@ -1,24 +1,24 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import { router, useForm } from '@inertiajs/react';
 
-/* Estado visible al participante — mapea estado interno a etiqueta + estilo */
 function estadoDisplay(participante) {
-    // Si el sorteo ya cerró y el participante estaba confirmado → FINALIZADO
     if (participante.sorteo_estado === 'cerrado' && participante.estado === 'confirmado') {
-        return { label: 'Finalizado', cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' };
+        return { label: 'FINALIZADO', cls: 'bg-surface2 text-muted border-muted/20' };
     }
     switch (participante.estado) {
         case 'confirmado':
-            return { label: 'Confirmado', cls: 'bg-green-500/20 text-green-300 border-green-500/30' };
+            return { label: 'CONFIRMADO', cls: 'bg-success/10 text-success border-success/30' };
         case 'pendiente':
-            return { label: 'Pendiente',  cls: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' };
+            return { label: 'PENDIENTE',  cls: 'bg-gold/10 text-gold border-gold/30' };
         default:
-            return { label: 'Finalizado', cls: 'bg-slate-500/20 text-slate-300 border-slate-500/30' };
+            return { label: 'FINALIZADO', cls: 'bg-surface2 text-muted border-muted/20' };
     }
 }
 
 export default function MiParticipacion({ resultados, busqueda }) {
-    const { data, setData, post, processing, errors } = useForm({ whatsapp: busqueda ?? '' });
+    const { data, setData, post, processing, errors } = useForm({
+        whatsapp: busqueda ?? '',
+    });
 
     function submit(e) {
         e.preventDefault();
@@ -29,19 +29,21 @@ export default function MiParticipacion({ resultados, busqueda }) {
 
     return (
         <PublicLayout>
-            <div className="mx-auto max-w-2xl px-4 py-12">
-                <div className="mb-8 text-center">
-                    <h1 className="font-[BebasNeue,sans-serif] text-4xl tracking-wide text-white">
-                        Mi participación
+            <div className="mx-auto max-w-2xl px-4 py-12 md:py-16">
+
+                {/* Header */}
+                <div className="mb-10">
+                    <h1 className="border-l-4 border-gold pl-4 font-display text-5xl text-cream">
+                        MI PARTICIPACIÓN
                     </h1>
-                    <p className="mt-2 text-sm text-slate-400">
+                    <p className="mt-3 pl-5 text-sm text-muted">
                         Ingresa tu número de WhatsApp para consultar el estado de tus registros.
                     </p>
                 </div>
 
                 {/* Buscador */}
-                <form onSubmit={submit} noValidate className="flex gap-2">
-                    <div className="flex-1">
+                <form onSubmit={submit} noValidate>
+                    <div className="flex">
                         <input
                             type="tel"
                             value={data.whatsapp}
@@ -49,21 +51,21 @@ export default function MiParticipacion({ resultados, busqueda }) {
                             placeholder="+51 999 999 999"
                             maxLength={30}
                             className={[
-                                'w-full rounded-xl border bg-slate-800 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition-colors focus:ring-2 focus:ring-pink-500',
-                                errors.whatsapp ? 'border-red-500' : 'border-slate-600',
+                                'flex-1 border bg-surface2 px-4 py-3 text-sm text-cream placeholder-muted outline-none transition-colors',
+                                errors.whatsapp ? 'border-danger' : 'border-gold/20 focus:border-gold',
                             ].join(' ')}
                         />
-                        {errors.whatsapp && (
-                            <p className="mt-1 text-xs text-red-400">{errors.whatsapp}</p>
-                        )}
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="bg-gold px-6 py-3 text-sm font-bold uppercase tracking-widest text-bg transition-colors hover:bg-gold-light disabled:opacity-50"
+                        >
+                            {processing ? 'Buscando…' : 'Buscar'}
+                        </button>
                     </div>
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="rounded-xl bg-pink-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-pink-700 disabled:opacity-50"
-                    >
-                        {processing ? 'Buscando…' : 'Buscar'}
-                    </button>
+                    {errors.whatsapp && (
+                        <p className="mt-1.5 text-xs text-danger">{errors.whatsapp}</p>
+                    )}
                 </form>
 
                 {/* Resultados */}
@@ -73,8 +75,12 @@ export default function MiParticipacion({ resultados, busqueda }) {
                             <EmptyState whatsapp={busqueda} />
                         ) : (
                             <div className="space-y-3">
-                                <p className="text-xs text-slate-500">
-                                    {resultados.length} registro{resultados.length !== 1 ? 's' : ''} encontrado{resultados.length !== 1 ? 's' : ''} para <span className="text-slate-300">{busqueda}</span>
+                                <p className="text-xs text-muted">
+                                    {resultados.length}{' '}
+                                    registro{resultados.length !== 1 ? 's' : ''}{' '}
+                                    encontrado{resultados.length !== 1 ? 's' : ''}{' '}
+                                    para{' '}
+                                    <span className="text-content">{busqueda}</span>
                                 </p>
                                 {resultados.map((p) => (
                                     <ResultadoCard key={p.id} participante={p} />
@@ -93,38 +99,40 @@ function ResultadoCard({ participante }) {
     const { label, cls } = estadoDisplay(participante);
 
     return (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-700 bg-slate-800 px-5 py-4">
-            <div className="min-w-0">
-                {/* Número de registro */}
-                <p className="font-mono text-xs text-slate-500">
-                    {participante.numero_registro ?? 'Sin N° asignado'}
-                </p>
-
-                {/* Nombre */}
-                <p className="truncate font-medium text-white">
-                    {participante.nombres} {participante.apellidos}
-                </p>
-
-                {/* Sorteo */}
-                <p className="mt-0.5 truncate text-sm text-slate-400">
-                    {participante.sorteo_nombre ?? '—'}
-                </p>
-
-                {/* Fecha del sorteo */}
-                {participante.sorteo_fecha && (
-                    <p className="text-xs text-slate-500">
-                        {new Date(participante.sorteo_fecha).toLocaleString('es-PE', {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                        })}
+        <div className="border border-gold/20 bg-surface px-5 py-4 transition-colors hover:border-gold/40">
+            <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                    {/* Número de registro */}
+                    <p className="font-display text-3xl leading-none text-gold">
+                        {participante.numero_registro ?? '—'}
                     </p>
-                )}
-            </div>
 
-            {/* Badge de estado */}
-            <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${cls}`}>
-                {label}
-            </span>
+                    {/* Nombre participante */}
+                    <p className="mt-1 text-xs text-muted">
+                        {participante.nombres} {participante.apellidos}
+                    </p>
+
+                    {/* Nombre sorteo */}
+                    <p className="mt-2 truncate text-sm font-semibold text-cream">
+                        {participante.sorteo_nombre ?? '—'}
+                    </p>
+
+                    {/* Fecha */}
+                    {participante.sorteo_fecha && (
+                        <p className="mt-0.5 text-xs text-muted">
+                            {new Date(participante.sorteo_fecha).toLocaleString('es-PE', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                            })}
+                        </p>
+                    )}
+                </div>
+
+                {/* Badge de estado */}
+                <span className={`shrink-0 border px-3 py-1 text-xs font-bold uppercase tracking-wider ${cls}`}>
+                    {label}
+                </span>
+            </div>
         </div>
     );
 }
@@ -132,20 +140,18 @@ function ResultadoCard({ participante }) {
 /* ── Estado vacío ── */
 function EmptyState({ whatsapp }) {
     return (
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-6 py-12 text-center">
-            <p className="text-3xl">🔍</p>
-            <p className="mt-3 font-medium text-white">Sin resultados</p>
-            <p className="mt-1 text-sm text-slate-400">
-                No encontramos registros para el número{' '}
-                <span className="text-slate-300">{whatsapp}</span>.
-            </p>
-            <p className="mt-3 text-xs text-slate-500">
-                Verifica que sea el mismo número con el que te registraste, incluyendo el código de país.
+        <div className="border border-gold/10 bg-surface px-6 py-14 text-center">
+            <p className="font-display text-6xl text-gold/20">🔍</p>
+            <p className="mt-4 text-sm font-semibold text-muted">Sin resultados</p>
+            <p className="mx-auto mt-2 max-w-xs text-sm text-muted">
+                No encontramos registros para{' '}
+                <span className="text-content">{whatsapp}</span>.
+                Verifica que sea el mismo número con el que te registraste.
             </p>
             <button
                 type="button"
                 onClick={() => router.visit('/sorteos')}
-                className="mt-5 rounded-lg bg-pink-600 px-5 py-2 text-sm font-semibold text-white hover:bg-pink-700"
+                className="mt-6 border border-gold/50 px-6 py-3 text-sm font-bold uppercase tracking-widest text-gold transition-colors hover:bg-gold/10"
             >
                 Ver sorteos activos
             </button>
