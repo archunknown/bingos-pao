@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\LandingController;
+use App\Http\Controllers\Public\SorteoPublicoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/sorteos/{sorteo}', [SorteoPublicoController::class, 'show'])->name('sorteos.show');
+Route::post('/sorteos/{sorteo}/registrar', [SorteoPublicoController::class, 'store'])->name('sorteos.registrar');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
