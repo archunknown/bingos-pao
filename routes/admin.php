@@ -19,7 +19,8 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(funct
 
     // Premios — CRUD anidado bajo sorteos + índice plano para la sidebar
     Route::resource('sorteos.premios', PremioController::class)
-    ->shallow();
+        ->shallow();
+    Route::post('sorteos/{sorteo}/premios/reordenar', [PremioController::class, 'reordenar'])->name('premios.reordenar');
 
     // Participantes
     Route::get('participantes', [ParticipanteController::class, 'index'])->name('participantes.index');

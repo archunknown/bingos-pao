@@ -93,6 +93,7 @@ export default function SorteoForm({ sorteo }) {
                             type="datetime-local"
                             value={data.fecha_sorteo}
                             onChange={(e) => setData('fecha_sorteo', e.target.value)}
+                            min={(() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(0,0,0,0); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })()}
                             className={inputCls(errors.fecha_sorteo)}
                         />
                     </Field>

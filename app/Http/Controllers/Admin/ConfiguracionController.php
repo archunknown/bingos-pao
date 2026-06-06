@@ -7,6 +7,9 @@ use App\Models\Configuracion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\ImageManager;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +19,6 @@ class ConfiguracionController extends Controller
         'nombre_negocio',
         'titular_pago',
         'whatsapp_contacto',
-        'alerta_seguridad_texto',
         'url_facebook',
         'url_instagram',
         'url_tiktok',
@@ -51,7 +53,6 @@ class ConfiguracionController extends Controller
             'nombre_negocio'        => ['nullable', 'string', 'max:200'],
             'titular_pago'          => ['nullable', 'string', 'max:200'],
             'whatsapp_contacto'     => ['nullable', 'string', 'max:20'],
-            'alerta_seguridad_texto'=> ['nullable', 'string', 'max:500'],
             'url_facebook'          => ['nullable', 'url', 'max:500'],
             'url_instagram'         => ['nullable', 'url', 'max:500'],
             'url_tiktok'            => ['nullable', 'url', 'max:500'],
@@ -65,15 +66,21 @@ class ConfiguracionController extends Controller
             Configuracion::set($clave, $request->input($clave, ''));
         }
 
+        $imagenes = ImageManager::usingDriver(GdDriver::class);
+
         foreach (self::ARCHIVOS as $campo => $clave_path) {
             if ($request->hasFile($campo)) {
-                // Eliminar archivo anterior si existe
                 $anterior = Configuracion::get($clave_path);
                 if ($anterior) {
-                    Storage::delete($anterior);
+                    Storage::disk('public')->delete($anterior);
                 }
 
-                $path = $request->file($campo)->store("configuracion", 'public');
+                $encoded = $imagenes->decode($request->file($campo)->getPathname())
+                    ->scaleDown(1200, 1200)
+                    ->encode(new JpegEncoder(quality: 80));
+
+                $path = 'configuracion/' . uniqid() . '.jpg';
+                Storage::disk('public')->put($path, (string) $encoded);
                 Configuracion::set($clave_path, $path);
             }
         }

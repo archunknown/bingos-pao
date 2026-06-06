@@ -1,12 +1,31 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import {
+    DndContext,
+    KeyboardSensor,
+    PointerSensor,
+    closestCenter,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    arrayMove,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
-export default function PremiosIndex({ sorteo, premios }) {
+export default function PremiosIndex({ sorteo, premios: premiosIniciales }) {
     const { flash } = usePage().props;
     const [toast, setToast]     = useState(null);
     const [modalOpen, setModal] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [premios, setPremios] = useState(premiosIniciales);
+
+    useEffect(() => { setPremios(premiosIniciales); }, [premiosIniciales]);
 
     useEffect(() => {
         const msg = flash?.success || flash?.error;
@@ -27,6 +46,27 @@ export default function PremiosIndex({ sorteo, premios }) {
     function destroy(premio) {
         if (!confirm(`¿Eliminar el premio "${premio.nombre}"?`)) return;
         router.delete(`/admin/premios/${premio.id}`, { preserveScroll: true });
+    }
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    );
+
+    function handleDragEnd(event) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = premios.findIndex((p) => p.id === active.id);
+        const newIndex = premios.findIndex((p) => p.id === over.id);
+        const nuevaLista = arrayMove(premios, oldIndex, newIndex);
+        setPremios(nuevaLista);
+
+        router.post(
+            `/admin/sorteos/${sorteo.id}/premios/reordenar`,
+            { orden: nuevaLista.map((p) => p.id) },
+            { preserveScroll: true },
+        );
     }
 
     return (
@@ -66,17 +106,25 @@ export default function PremiosIndex({ sorteo, premios }) {
                         No hay premios aún. Agrega el primero.
                     </div>
                 ) : (
-                    <div className="space-y-2">
-                        {premios.map((p) => (
-                            <PremioCard
-                                key={p.id}
-                                premio={p}
-                                onEdit={() => openEdit(p)}
-                                onDelete={() => destroy(p)}
-                                onToggleVisible={() => toggleVisible(p)}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <p className="text-xs text-muted">Arrastra para reordenar</p>
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                            <SortableContext items={premios.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                                <div className="space-y-2">
+                                    {premios.map((p, i) => (
+                                        <SortablePremioCard
+                                            key={p.id}
+                                            premio={p}
+                                            posicion={i + 1}
+                                            onEdit={() => openEdit(p)}
+                                            onDelete={() => destroy(p)}
+                                            onToggleVisible={() => toggleVisible(p)}
+                                        />
+                                    ))}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
+                    </>
                 )}
             </div>
 
@@ -87,12 +135,28 @@ export default function PremiosIndex({ sorteo, premios }) {
     );
 }
 
-function PremioCard({ premio, onEdit, onDelete, onToggleVisible }) {
+function SortablePremioCard({ premio, posicion, onEdit, onDelete, onToggleVisible }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: premio.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex:  isDragging ? 10 : 'auto',
+    };
+
     return (
-        <div className="flex items-center gap-4 border border-gold/20 bg-surface px-4 py-3 transition-colors hover:border-gold/40">
-            <span className="w-8 shrink-0 text-center font-display text-lg text-gold">
-                {premio.orden}
-            </span>
+        <div ref={setNodeRef} style={style} className="flex items-center gap-4 border border-gold/20 bg-surface px-4 py-3 transition-colors hover:border-gold/40">
+            <button
+                type="button"
+                {...attributes}
+                {...listeners}
+                className="shrink-0 cursor-grab touch-none text-gold/40 hover:text-gold active:cursor-grabbing"
+                title="Arrastrar para reordenar"
+            >
+                <IconGrip />
+            </button>
+            <span className="w-6 shrink-0 text-center text-xs text-muted">{posicion}</span>
             <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-cream">{premio.nombre}</p>
                 <p className="text-xs text-muted">
@@ -110,8 +174,8 @@ function PremioCard({ premio, onEdit, onDelete, onToggleVisible }) {
                 title={premio.visible ? 'Ocultar' : 'Mostrar'}
                 className={`shrink-0 border px-2.5 py-0.5 text-xs font-medium transition-colors ${
                     premio.visible
-                        ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
-                        : 'bg-surface2 text-muted border-muted/20 hover:text-cream'
+                        ? 'border-success/30 bg-success/10 text-success hover:bg-success/20'
+                        : 'border-muted/20 bg-surface2 text-muted hover:text-cream'
                 }`}
             >
                 {premio.visible ? 'Visible' : 'Oculto'}
@@ -187,26 +251,15 @@ function PremioModal({ sorteoId, premio, onClose }) {
                         />
                     </Field>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Field label="Cantidad" error={errors.cantidad}>
-                            <input
-                                type="number"
-                                min="1"
-                                value={data.cantidad}
-                                onChange={(e) => setData('cantidad', Number(e.target.value))}
-                                className={inputCls(errors.cantidad)}
-                            />
-                        </Field>
-                        <Field label="Orden" error={errors.orden}>
-                            <input
-                                type="number"
-                                min="0"
-                                value={data.orden}
-                                onChange={(e) => setData('orden', Number(e.target.value))}
-                                className={inputCls(errors.orden)}
-                            />
-                        </Field>
-                    </div>
+                    <Field label="Cantidad" error={errors.cantidad}>
+                        <input
+                            type="number"
+                            min="1"
+                            value={data.cantidad}
+                            onChange={(e) => setData('cantidad', Number(e.target.value))}
+                            className={inputCls(errors.cantidad)}
+                        />
+                    </Field>
 
                     <Field label="Monto S/ (opcional)" error={errors.monto}>
                         <input
@@ -260,6 +313,16 @@ function PremioModal({ sorteoId, premio, onClose }) {
                 </form>
             </div>
         </div>
+    );
+}
+
+function IconGrip() {
+    return (
+        <svg className="size-4" fill="currentColor" viewBox="0 0 16 16">
+            <circle cx="5" cy="4" r="1.2" /><circle cx="11" cy="4" r="1.2" />
+            <circle cx="5" cy="8" r="1.2" /><circle cx="11" cy="8" r="1.2" />
+            <circle cx="5" cy="12" r="1.2" /><circle cx="11" cy="12" r="1.2" />
+        </svg>
     );
 }
 

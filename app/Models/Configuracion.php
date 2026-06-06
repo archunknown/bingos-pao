@@ -26,8 +26,8 @@ class Configuracion extends Model
         return static::find($clave)?->valor;
     }
 
-    public static function set(string $clave, string $valor): void
+    public static function set(string $clave, ?string $valor): void
     {
-        static::updateOrCreate(['clave' => $clave], ['valor' => $valor]);
+        static::updateOrCreate(['clave' => $clave], ['valor' => $valor ?? '']);
     }
 }

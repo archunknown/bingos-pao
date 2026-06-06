@@ -25,7 +25,7 @@ export default function Dashboard({
                     <StatCard label="Comprobantes pendientes" value={comprobantes_pendientes} icon={<IconClock />} accent="gold" />
                     <StatCard
                         label="Pozo acumulado"
-                        value={pozo_acumulado != null ? `S/ ${pozo_acumulado}` : '—'}
+                        value={`S/ ${Number(pozo_acumulado ?? 0).toFixed(2)}`}
                         icon={<IconMoney />}
                         accent="gold"
                     />

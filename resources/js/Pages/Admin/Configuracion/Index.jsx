@@ -21,10 +21,14 @@ export default function ConfiguracionIndex({ config }) {
         e.preventDefault();
         setErrors({});
         const formData = new FormData(formRef.current);
+        for (const [key, val] of formData.entries()) {
+            if (val instanceof File) console.log(`[upload] ${key}: ${val.name} (${(val.size/1024).toFixed(1)} KB)`);
+        }
         router.post('/admin/configuracion', formData, {
             forceFormData: true,
             onBefore: () => setSaving(true),
-            onError:  (err) => setErrors(err),
+            onError:  (err) => { console.error('[upload] onError:', err); setErrors(err); },
+            onSuccess: (page) => console.log('[upload] onSuccess:', page),
             onFinish: () => setSaving(false),
         });
     }
@@ -56,10 +60,6 @@ export default function ConfiguracionIndex({ config }) {
                         <Field label="WhatsApp de contacto">
                             <input type="text" name="whatsapp_contacto" defaultValue={config.whatsapp_contacto}
                                 maxLength={20} placeholder="+51 999 999 999" className={inputCls} />
-                        </Field>
-                        <Field label="Texto de alerta de seguridad">
-                            <input type="text" name="alerta_seguridad_texto" defaultValue={config.alerta_seguridad_texto}
-                                maxLength={500} placeholder="Ej. Solo aceptamos pagos por Yape o Plin." className={inputCls} />
                         </Field>
                     </Section>
 

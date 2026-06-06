@@ -10,8 +10,9 @@ const ESTADO_BADGE = {
 
 export default function ParticipanteShow({ participante, comprobante_url }) {
     const { flash } = usePage().props;
-    const [toast, setToast]           = useState(null);
-    const [rechazarOpen, setRechazar] = useState(false);
+    const [toast, setToast]             = useState(null);
+    const [rechazarOpen, setRechazar]   = useState(false);
+    const [confirmarOpen, setConfirmar] = useState(false);
 
     useEffect(() => {
         const msg = flash?.success || flash?.error;
@@ -22,7 +23,6 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
     }, [flash]);
 
     function confirmar() {
-        if (!confirm('¿Confirmar a este participante?')) return;
         router.patch(`/admin/participantes/${participante.id}/confirmar`);
     }
 
@@ -90,7 +90,7 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                             <div className="flex gap-3 pt-2">
                                 <button
                                     type="button"
-                                    onClick={confirmar}
+                                    onClick={() => setConfirmar(true)}
                                     className="flex-1 bg-success py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
                                 >
                                     CONFIRMAR
@@ -139,7 +139,64 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                     </div>
                 </div>
             </div>
+
+            {confirmarOpen && (
+                <ConfirmarModal
+                    participante={participante}
+                    onConfirm={confirmar}
+                    onCancel={() => setConfirmar(false)}
+                />
+            )}
         </AdminLayout>
+    );
+}
+
+function ConfirmarModal({ participante, onConfirm, onCancel }) {
+    useEffect(() => {
+        function onKey(e) { if (e.key === 'Escape') onCancel(); }
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onCancel]);
+
+    return (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-bg/80 p-4">
+            <div className="w-full max-w-sm border border-gold/20 bg-surface p-6 shadow-2xl">
+                <div className="mb-5 flex items-center gap-3">
+                    <span className="flex size-10 items-center justify-center rounded-full bg-success/10 text-xl text-success">✓</span>
+                    <h2 className="font-display text-2xl text-cream">CONFIRMAR PAGO</h2>
+                </div>
+
+                <p className="mb-1 text-sm text-muted">
+                    Estás por confirmar la participación de:
+                </p>
+                <p className="mb-1 font-semibold text-cream">
+                    {participante.nombres} {participante.apellidos}
+                </p>
+                <p className="mb-5 text-sm text-muted">
+                    Sorteo: <span className="text-content">{participante.sorteo?.nombre}</span>
+                </p>
+                <p className="mb-6 text-xs text-muted">
+                    Se le asignará un número de registro y quedará habilitado para participar.
+                </p>
+
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="flex-1 border border-gold/30 py-2.5 text-sm font-medium text-muted transition-colors hover:border-gold hover:text-cream"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        className="flex-1 bg-success py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
+                    >
+                        Sí, confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
 

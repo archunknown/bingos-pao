@@ -52,6 +52,20 @@ class PremioController extends Controller
         return back()->with('success', 'Premio actualizado.');
     }
 
+    public function reordenar(Request $request, Sorteo $sorteo): RedirectResponse
+    {
+        $request->validate([
+            'orden'   => ['required', 'array'],
+            'orden.*' => ['integer'],
+        ]);
+
+        foreach ($request->orden as $posicion => $premioId) {
+            $sorteo->premios()->where('id', $premioId)->update(['orden' => $posicion + 1]);
+        }
+
+        return back()->with('success', 'Orden actualizado.');
+    }
+
     public function destroy(Premio $premio): RedirectResponse
     {
         $premio->delete();
