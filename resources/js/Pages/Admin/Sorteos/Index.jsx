@@ -14,9 +14,55 @@ const ESTADO_BADGE = {
 
 const TOGGLE_LABEL = { borrador: 'Activar', activo: 'Cerrar' };
 
+function ConfirmDeleteModal({ sorteo, onConfirm, onCancel }) {
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+            onClick={onCancel}
+        >
+            <div
+                className="w-full max-w-sm border border-danger/30 bg-surface p-6 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="mb-1 flex items-center gap-3">
+                    <span className="flex size-9 items-center justify-center border border-danger/40 bg-danger/10 text-danger">
+                        <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        </svg>
+                    </span>
+                    <h3 className="font-display text-xl text-cream">ELIMINAR SORTEO</h3>
+                </div>
+                <p className="mb-1 mt-3 text-sm text-content">
+                    ¿Estás seguro de que quieres eliminar{' '}
+                    <span className="font-semibold text-cream">"{sorteo.nombre}"</span>?
+                </p>
+                <p className="text-xs text-muted">Esta acción no se puede deshacer.</p>
+                <div className="mt-5 flex justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="border border-gold/30 px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-gold hover:text-cream"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        className="bg-danger px-4 py-2 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-danger-dark"
+                    >
+                        Sí, eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function SorteosIndex({ sorteos }) {
     const { flash } = usePage().props;
     const [toast, setToast] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => {
         const msg = flash?.success || flash?.error;
@@ -31,12 +77,24 @@ export default function SorteosIndex({ sorteos }) {
     }
 
     function destroy(sorteo) {
-        if (!confirm(`¿Eliminar el sorteo "${sorteo.nombre}"?`)) return;
-        router.delete(`/admin/sorteos/${sorteo.id}`, { preserveScroll: true });
+        setDeleteTarget(sorteo);
+    }
+
+    function confirmDelete() {
+        router.delete(`/admin/sorteos/${deleteTarget.id}`, { preserveScroll: true });
+        setDeleteTarget(null);
     }
 
     return (
         <AdminLayout>
+            {deleteTarget && (
+                <ConfirmDeleteModal
+                    sorteo={deleteTarget}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setDeleteTarget(null)}
+                />
+            )}
+
             {toast && (
                 <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
                     toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
