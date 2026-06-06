@@ -1,6 +1,7 @@
 import PublicLayout from '@/Layouts/PublicLayout';
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 const listContainer = {
     hidden:  {},
@@ -20,19 +21,25 @@ function estadoDisplay(participante) {
             return { label: 'CONFIRMADO', cls: 'bg-success/10 text-success border-success/30' };
         case 'pendiente':
             return { label: 'PENDIENTE',  cls: 'bg-gold/10 text-gold border-gold/30' };
+        case 'rechazado':
+            return { label: 'RECHAZADO',  cls: 'bg-danger/10 text-danger border-danger/30' };
         default:
             return { label: 'FINALIZADO', cls: 'bg-surface2 text-muted border-muted/20' };
     }
 }
 
 export default function MiParticipacion({ resultados, busqueda }) {
-    const { data, setData, post, processing, errors } = useForm({
-        whatsapp: busqueda ?? '',
-    });
+    const [valor, setValor]     = useState(busqueda ?? '');
+    const [loading, setLoading] = useState(false);
 
     function submit(e) {
         e.preventDefault();
-        post('/mi-participacion/buscar');
+        if (!valor.trim()) return;
+        setLoading(true);
+        router.get('/mi-participacion', { whatsapp: valor.trim() }, {
+            preserveState: true,
+            onFinish: () => setLoading(false),
+        });
     }
 
     const buscado = busqueda !== '' && busqueda != null;
@@ -67,26 +74,20 @@ export default function MiParticipacion({ resultados, busqueda }) {
                     <div className="flex">
                         <input
                             type="tel"
-                            value={data.whatsapp}
-                            onChange={(e) => setData('whatsapp', e.target.value)}
+                            value={valor}
+                            onChange={(e) => setValor(e.target.value)}
                             placeholder="+51 999 999 999"
                             maxLength={30}
-                            className={[
-                                'flex-1 border bg-surface2 px-4 py-3 text-sm text-cream placeholder-muted outline-none transition-colors',
-                                errors.whatsapp ? 'border-danger' : 'border-gold/20 focus:border-gold',
-                            ].join(' ')}
+                            className="flex-1 border border-gold/20 bg-surface2 px-4 py-3 text-sm text-cream placeholder-muted outline-none transition-colors focus:border-gold"
                         />
                         <button
                             type="submit"
-                            disabled={processing}
+                            disabled={loading}
                             className="bg-gold px-6 py-3 text-sm font-bold uppercase tracking-widest text-bg transition-colors hover:bg-gold-light disabled:opacity-50"
                         >
-                            {processing ? 'Buscando…' : 'Buscar'}
+                            {loading ? 'Buscando…' : 'Buscar'}
                         </button>
                     </div>
-                    {errors.whatsapp && (
-                        <p className="mt-1.5 text-xs text-danger">{errors.whatsapp}</p>
-                    )}
                 </motion.form>
 
                 {/* Resultados */}
@@ -152,6 +153,12 @@ function ResultadoCard({ participante }) {
                     {label}
                 </span>
             </div>
+            {participante.estado === 'rechazado' && participante.nota_interna && (
+                <div className="mt-3 border-t border-danger/20 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-danger">Motivo del rechazo</p>
+                    <p className="mt-1 text-sm text-muted">{participante.nota_interna}</p>
+                </div>
+            )}
         </div>
     );
 }
@@ -174,7 +181,7 @@ function EmptyState({ whatsapp }) {
             </p>
             <button
                 type="button"
-                onClick={() => router.visit('/sorteos')}
+                onClick={() => router.visit('/')}
                 className="mt-6 border border-gold/50 px-6 py-3 text-sm font-bold uppercase tracking-widest text-gold transition-colors hover:bg-gold/10"
             >
                 Ver sorteos activos

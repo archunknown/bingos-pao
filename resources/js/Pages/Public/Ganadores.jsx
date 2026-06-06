@@ -180,7 +180,7 @@ function EmptyState({ filtrado, onLimpiar }) {
                     Ver todos los ganadores
                 </button>
             ) : (
-                <button type="button" onClick={() => router.visit('/sorteos')}
+                <button type="button" onClick={() => router.visit('/')}
                     className="mt-6 border border-gold/50 px-6 py-3 text-sm font-bold uppercase tracking-widest text-gold transition-colors hover:bg-gold/10">
                     Ver sorteos activos
                 </button>

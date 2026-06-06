@@ -21,6 +21,14 @@ class SorteoPublicoController extends Controller
         'terminos_condiciones',
     ];
 
+    public function index(): RedirectResponse
+    {
+        $sorteo = Sorteo::activos()->orderBy('fecha_sorteo')->first();
+        return $sorteo
+            ? redirect()->route('sorteos.show', $sorteo)
+            : redirect()->route('landing');
+    }
+
     public function show(Sorteo $sorteo): Response
     {
         abort_if($sorteo->estado !== 'activo', 404);

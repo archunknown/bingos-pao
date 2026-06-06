@@ -13,7 +13,6 @@ class LandingController extends Controller
 {
     private const CONFIG_CLAVES = [
         'nombre_negocio',
-        'alerta_seguridad_texto',
         'url_stream_live',
         'url_stream_grabado',
         'estado_stream',
@@ -43,13 +42,16 @@ class LandingController extends Controller
             $config[$clave] = Configuracion::get($clave) ?? '';
         }
 
-        $proxima_fecha = $sorteos_activos->first()?->fecha_sorteo?->toIso8601String();
+        $fechas_sorteos = $sorteos_activos
+            ->pluck('fecha_sorteo')
+            ->map(fn ($f) => $f->toIso8601String())
+            ->values();
 
         return Inertia::render('Public/Landing', compact(
             'sorteos_activos',
             'ganadores_recientes',
             'config',
-            'proxima_fecha',
+            'fechas_sorteos',
         ));
     }
 }

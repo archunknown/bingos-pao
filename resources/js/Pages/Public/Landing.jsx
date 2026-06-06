@@ -35,16 +35,16 @@ const chipItem = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
-export default function Landing({ sorteos_activos, ganadores_recientes, config, proxima_fecha }) {
+export default function Landing({ sorteos_activos, ganadores_recientes, config, fechas_sorteos }) {
     return (
         <PublicLayout>
-            <HeroSection config={config} proxima_fecha={proxima_fecha} />
+            <HeroSection config={config} fechas_sorteos={fechas_sorteos} hay_sorteos={sorteos_activos.length > 0} />
             <Divider />
             <StreamSection config={config} />
             {sorteos_activos.length > 0 && (
                 <>
                     <Divider />
-                    <SorteosSection sorteos={sorteos_activos} />
+                    <SorteosSection sorteos={sorteos_activos} id="sorteos" />
                 </>
             )}
             {ganadores_recientes.length > 0 && (
@@ -64,8 +64,8 @@ function Divider() {
 }
 
 /* ── Hero ── */
-function HeroSection({ config, proxima_fecha }) {
-    const countdown = useCountdown(proxima_fecha);
+function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
+    const countdown = useCountdown(fechas_sorteos);
 
     return (
         <section className="relative overflow-hidden bg-bg px-4 py-16 text-center md:py-24">
@@ -120,7 +120,7 @@ function HeroSection({ config, proxima_fecha }) {
                 </motion.p>
 
                 {/* Countdown */}
-                {proxima_fecha && countdown && !countdown.expired && (
+                {countdown && !countdown.expired && (
                     <motion.div variants={heroItem} className="mt-10">
                         <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-muted">
                             Próximo sorteo en
@@ -158,13 +158,19 @@ function HeroSection({ config, proxima_fecha }) {
 
                 {/* CTA */}
                 <motion.div variants={heroItem} className="mt-10 flex flex-wrap justify-center gap-4">
-                    <button
-                        type="button"
-                        onClick={() => router.visit('/sorteos')}
-                        className="bg-gold px-8 py-4 text-sm font-bold uppercase tracking-widest text-bg transition-colors hover:bg-gold-light"
-                    >
-                        Participar ahora
-                    </button>
+                    {hay_sorteos ? (
+                        <button
+                            type="button"
+                            onClick={() => document.getElementById('sorteos')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="bg-gold px-8 py-4 text-sm font-bold uppercase tracking-widest text-bg transition-colors hover:bg-gold-light"
+                        >
+                            Participar ahora
+                        </button>
+                    ) : (
+                        <span className="border border-gold/30 px-8 py-4 text-sm font-bold uppercase tracking-widest text-muted">
+                            Próximamente
+                        </span>
+                    )}
                     {config.url_stream_live && (
                         <a
                             href={config.url_stream_live}
@@ -242,9 +248,9 @@ function StreamSection({ config }) {
 }
 
 /* ── Sorteos activos ── */
-function SorteosSection({ sorteos }) {
+function SorteosSection({ sorteos, id }) {
     return (
-        <section className="px-4 py-16 md:py-24">
+        <section id={id} className="px-4 py-16 md:py-24">
             <div className="mx-auto max-w-5xl">
                 <h2 className="mb-10 border-l-4 border-gold pl-5 font-display text-5xl text-cream">
                     SORTEOS ACTIVOS
@@ -356,8 +362,8 @@ function GanadoresSection({ ganadores }) {
 
 /* ── Banner de seguridad ── */
 function SeguridadBanner({ config }) {
-    const { alerta_seguridad_texto: alerta, titular_pago: titular } = config;
-    if (!alerta && !titular) return null;
+    const { titular_pago: titular } = config;
+    if (!titular) return null;
 
     return (
         <section className="px-4 py-16 md:py-24">
@@ -366,7 +372,6 @@ function SeguridadBanner({ config }) {
                     <span className="shrink-0 text-xl text-danger">⚠</span>
                     <div>
                         <p className="font-display text-2xl tracking-widest text-danger">AVISO DE SEGURIDAD</p>
-                        {alerta && <p className="mt-2 text-sm text-cream">{alerta}</p>}
                         {titular && (
                             <p className="mt-3 text-xs text-muted">
                                 Titular verificado:{' '}
@@ -381,25 +386,27 @@ function SeguridadBanner({ config }) {
 }
 
 /* ── Hook countdown ── */
-function calcDiff(iso) {
-    if (!iso) return null;
-    const remaining = new Date(iso).getTime() - Date.now();
-    if (remaining <= 0) return { expired: true };
+function calcNextDiff(fechas) {
+    if (!fechas?.length) return null;
+    const now = Date.now();
+    const proxima = fechas.map((f) => new Date(f).getTime()).find((t) => t > now);
+    if (!proxima) return { expired: true };
+    const remaining = proxima - now;
     return {
-        expired:  false,
-        days:     Math.floor(remaining / 86_400_000),
-        hours:    Math.floor((remaining % 86_400_000) / 3_600_000),
-        minutes:  Math.floor((remaining % 3_600_000) / 60_000),
-        seconds:  Math.floor((remaining % 60_000) / 1000),
+        expired: false,
+        days:    Math.floor(remaining / 86_400_000),
+        hours:   Math.floor((remaining % 86_400_000) / 3_600_000),
+        minutes: Math.floor((remaining % 3_600_000) / 60_000),
+        seconds: Math.floor((remaining % 60_000) / 1000),
     };
 }
 
-function useCountdown(iso) {
-    const [diff, setDiff] = useState(() => calcDiff(iso));
-    const ref = useRef(iso);
-    ref.current = iso;
+function useCountdown(fechas) {
+    const [diff, setDiff] = useState(() => calcNextDiff(fechas));
+    const ref = useRef(fechas);
+    ref.current = fechas;
     useEffect(() => {
-        const id = setInterval(() => setDiff(calcDiff(ref.current)), 1000);
+        const id = setInterval(() => setDiff(calcNextDiff(ref.current)), 1000);
         return () => clearInterval(id);
     }, []);
     return diff;
