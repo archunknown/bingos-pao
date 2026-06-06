@@ -81,11 +81,11 @@ export default function GanadoresPublico({ ganadores, sorteos, filtro_sorteo_id 
                     <EmptyState filtrado={!!filtro_sorteo_id} onLimpiar={() => filtrar(null)} />
                 ) : (
                     <motion.div
+                        key={String(filtro_sorteo_id ?? 'all')}
                         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
                         variants={gridContainer}
                         initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
+                        animate="visible"
                     >
                         {ganadores.map((g) => (
                             <motion.div key={g.id} variants={gridItem}>
