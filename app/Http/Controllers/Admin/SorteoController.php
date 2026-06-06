@@ -14,7 +14,7 @@ class SorteoController extends Controller
 {
     public function index(): Response
     {
-        $sorteos = Sorteo::withCount('participantes')
+        $sorteos = Sorteo::withCount(['participantes as participantes_count' => fn ($q) => $q->whereIn('estado', ['pendiente', 'confirmado'])])
             ->latest()
             ->get();
 
