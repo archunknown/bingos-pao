@@ -5,7 +5,6 @@ const NAV_ITEMS = [
     { label: 'Dashboard',     href: '/admin',               icon: IconGrid },
     { label: 'Sorteos',       href: '/admin/sorteos',        icon: IconTicket },
     { label: 'Nuevo Sorteo',  href: '/admin/sorteos/create', icon: IconPlus },
-    { label: 'Premios',       href: '/admin/premios',        icon: IconGift },
     { label: 'Participantes', href: '/admin/participantes',  icon: IconUsers },
     { label: 'Transmisión',   href: '/admin/transmision',    icon: IconVideo },
     { label: 'Ganadores',     href: '/admin/ganadores',      icon: IconTrophy },

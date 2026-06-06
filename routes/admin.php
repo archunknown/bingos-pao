@@ -18,10 +18,8 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(funct
     Route::patch('sorteos/{sorteo}/toggle-estado', [SorteoController::class, 'toggleEstado'])->name('sorteos.toggle-estado');
 
     // Premios — CRUD anidado bajo sorteos + índice plano para la sidebar
-    Route::get('premios', [PremioController::class, 'index'])->name('premios.index');
     Route::resource('sorteos.premios', PremioController::class)
-        ->except(['index'])
-        ->shallow();
+    ->shallow();
 
     // Participantes — CRUD anidado bajo sorteos + índice plano para la sidebar
     Route::get('participantes', [ParticipanteController::class, 'index'])->name('participantes.index');
