@@ -21,10 +21,13 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(funct
     Route::resource('sorteos.premios', PremioController::class)
     ->shallow();
 
-    // Participantes — CRUD anidado bajo sorteos + índice plano para la sidebar
+    // Participantes
     Route::get('participantes', [ParticipanteController::class, 'index'])->name('participantes.index');
+    Route::get('participantes/{participante}', [ParticipanteController::class, 'show'])->name('participantes.show');
+    Route::patch('participantes/{participante}/confirmar', [ParticipanteController::class, 'confirmar'])->name('participantes.confirmar');
+    Route::patch('participantes/{participante}/rechazar', [ParticipanteController::class, 'rechazar'])->name('participantes.rechazar');
     Route::resource('sorteos.participantes', ParticipanteController::class)
-        ->except(['index'])
+        ->only(['store'])
         ->shallow();
 
     // Ganadores

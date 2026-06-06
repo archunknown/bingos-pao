@@ -38,6 +38,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error'   => $request->session()->get('error'),
             ],
+            'pendientes_count' => $request->user()
+                ? \App\Models\Participante::where('estado', 'pendiente')->count()
+                : 0,
         ];
     }
 }

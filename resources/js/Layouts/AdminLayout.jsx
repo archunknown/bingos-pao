@@ -12,7 +12,8 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout({ children }) {
-    const { url, auth } = usePage().props;
+    const { auth, pendientes_count } = usePage().props;
+    const { url } = usePage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     function logout() {
@@ -20,7 +21,6 @@ export default function AdminLayout({ children }) {
     }
 
     function isActive(href) {
-        const { url = '' } = usePage();
         if (href === '/admin') return url === '/admin' || url === '/admin/';
         return url.startsWith(href);
     }
@@ -29,6 +29,9 @@ export default function AdminLayout({ children }) {
         <nav className="flex flex-col gap-1 p-4">
             {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
                 const active = isActive(href);
+                const badge = label === 'Participantes' && pendientes_count > 0
+                    ? pendientes_count
+                    : null;
                 return (
                     <a
                         key={href}
@@ -46,7 +49,12 @@ export default function AdminLayout({ children }) {
                         ].join(' ')}
                     >
                         <Icon className="size-5 shrink-0" />
-                        {label}
+                        <span className="flex-1">{label}</span>
+                        {badge && (
+                            <span className="rounded-full bg-yellow-400 px-1.5 py-0.5 text-[10px] font-bold leading-none text-black">
+                                {badge}
+                            </span>
+                        )}
                     </a>
                 );
             })}
