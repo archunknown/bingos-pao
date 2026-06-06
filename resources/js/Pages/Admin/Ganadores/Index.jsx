@@ -177,7 +177,14 @@ function RegistrarGanadorForm({ sorteos }) {
                                 : 'Primero elige un sorteo'}
                         </option>
                         {premios.map((p) => (
-                            <option key={p.id} value={p.id}>{p.nombre}</option>
+                            <option key={p.id} value={p.id}>
+                                {p.nombre}
+                                {p.monto != null
+                                    ? ` (S/ ${Number(p.monto).toFixed(2)})`
+                                    : p.descripcion_premio
+                                        ? ` (${p.descripcion_premio})`
+                                        : ''}
+                            </option>
                         ))}
                     </select>
                 </Field>

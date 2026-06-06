@@ -74,7 +74,7 @@ class GanadorController extends Controller
                 ->get(['id', 'nombres', 'apellidos', 'numero_registro']),
             'premios' => Premio::where('sorteo_id', $sorteoId)
                 ->orderBy('orden')
-                ->get(['id', 'nombre']),
+                ->get(['id', 'nombre', 'monto', 'descripcion_premio']),
         ]);
     }
 
