@@ -1,5 +1,6 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import { useForm } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 const TIPO_LABEL = {
@@ -19,8 +20,13 @@ export default function SorteoPublico({ sorteo, config }) {
 
     return (
         <PublicLayout>
-            {/* Header del sorteo */}
-            <div className="border-b border-gold/20 bg-surface2 px-4 py-10 md:py-14">
+            {/* Header — fade in */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="border-b border-gold/20 bg-surface2 px-4 py-10 md:py-14"
+            >
                 <div className="mx-auto max-w-5xl">
                     <div className="mb-4 flex flex-wrap items-center gap-2">
                         <span className="bg-gold px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-bg">
@@ -35,8 +41,7 @@ export default function SorteoPublico({ sorteo, config }) {
                     <p className="mt-3 flex items-center gap-2 text-sm text-muted">
                         <IconCalendar />
                         {new Date(sorteo.fecha_sorteo).toLocaleString('es-PE', {
-                            dateStyle: 'full',
-                            timeStyle: 'short',
+                            dateStyle: 'full', timeStyle: 'short',
                         })}
                     </p>
 
@@ -49,9 +54,7 @@ export default function SorteoPublico({ sorteo, config }) {
                                         <span className="font-display text-4xl leading-none text-gold">
                                             {String(v).padStart(2, '0')}
                                         </span>
-                                        <span className="mt-1 text-[9px] uppercase tracking-widest text-muted">
-                                            {l}
-                                        </span>
+                                        <span className="mt-1 text-[9px] uppercase tracking-widest text-muted">{l}</span>
                                     </div>
                                     {i < arr.length - 1 && (
                                         <span className="font-display text-2xl text-gold/50">:</span>
@@ -66,15 +69,19 @@ export default function SorteoPublico({ sorteo, config }) {
                         </p>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
             {/* Contenido principal */}
             <div className="mx-auto max-w-5xl px-4 py-10 md:py-16">
                 <div className="grid gap-8 lg:grid-cols-2">
 
-                    {/* ─ Columna izquierda ─ */}
-                    <div className="space-y-6">
-
+                    {/* Columna izquierda — slide desde la izquierda */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }}
+                        className="space-y-6"
+                    >
                         {/* Premios */}
                         {sorteo.premios?.length > 0 && (
                             <section className="border border-gold/20 bg-surface">
@@ -124,12 +131,16 @@ export default function SorteoPublico({ sorteo, config }) {
                                 ))}
                             </ol>
                         </section>
-                    </div>
+                    </motion.div>
 
-                    {/* ─ Columna derecha ─ */}
-                    <div className="space-y-5">
-
-                        {/* Precio destacado */}
+                    {/* Columna derecha — slide desde la derecha */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }}
+                        className="space-y-5"
+                    >
+                        {/* Precio */}
                         <div className="bg-gold p-6 text-center text-bg">
                             <p className="text-xs font-bold uppercase tracking-widest opacity-60">
                                 Precio por participación
@@ -139,22 +150,12 @@ export default function SorteoPublico({ sorteo, config }) {
                             </p>
                         </div>
 
-                        {/* QR Yape + Plin */}
+                        {/* QRs */}
                         <div>
-                            <h3 className="mb-3 font-display text-2xl text-cream">
-                                REALIZA TU PAGO
-                            </h3>
+                            <h3 className="mb-3 font-display text-2xl text-cream">REALIZA TU PAGO</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                <QrCard
-                                    label="YAPE"
-                                    imgUrl={config.qr_yape_path}
-                                    titular={config.titular_pago}
-                                />
-                                <QrCard
-                                    label="PLIN"
-                                    imgUrl={config.qr_plin_path}
-                                    titular={config.titular_pago}
-                                />
+                                <QrCard label="YAPE" imgUrl={config.qr_yape_path} titular={config.titular_pago} />
+                                <QrCard label="PLIN" imgUrl={config.qr_plin_path} titular={config.titular_pago} />
                             </div>
                         </div>
 
@@ -166,7 +167,6 @@ export default function SorteoPublico({ sorteo, config }) {
                             </p>
                         </div>
 
-                        {/* Formulario o confirmación */}
                         {enviado ? (
                             <SuccessState whatsapp={config.whatsapp_contacto} />
                         ) : (
@@ -176,7 +176,7 @@ export default function SorteoPublico({ sorteo, config }) {
                                 onSuccess={() => setEnviado(true)}
                             />
                         )}
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         </PublicLayout>
@@ -189,19 +189,13 @@ function QrCard({ label, imgUrl, titular }) {
         <div className="flex flex-col items-center gap-3 border border-gold/30 bg-surface2 p-4 text-center">
             <p className="font-display text-xl tracking-widest text-gold">{label}</p>
             {imgUrl ? (
-                <img
-                    src={imgUrl}
-                    alt={`QR ${label}`}
-                    className="h-28 w-28 border border-gold/20 object-contain"
-                />
+                <img src={imgUrl} alt={`QR ${label}`} className="h-28 w-28 border border-gold/20 object-contain" />
             ) : (
                 <div className="flex h-28 w-28 items-center justify-center border-2 border-dashed border-gold/30 text-[10px] text-muted">
                     Sin QR configurado
                 </div>
             )}
-            {titular && (
-                <p className="text-xs font-bold text-gold">{titular}</p>
-            )}
+            {titular && <p className="text-xs font-bold text-gold">{titular}</p>}
         </div>
     );
 }
@@ -209,7 +203,12 @@ function QrCard({ label, imgUrl, titular }) {
 /* ── Estado de éxito ── */
 function SuccessState({ whatsapp }) {
     return (
-        <div className="border border-gold/20 bg-surface p-8 text-center">
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="border border-gold/20 bg-surface p-8 text-center"
+        >
             <div className="mx-auto mb-5 flex size-16 items-center justify-center border border-gold bg-gold/20 text-gold">
                 <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -231,7 +230,7 @@ function SuccessState({ whatsapp }) {
                     Contactar por WhatsApp
                 </a>
             )}
-        </div>
+        </motion.div>
     );
 }
 
@@ -241,11 +240,7 @@ function RegistroForm({ sorteoId, terminos, onSuccess }) {
     const fileRef = useRef(null);
 
     const { data, setData, post, processing, errors } = useForm({
-        nombres:     '',
-        apellidos:   '',
-        whatsapp:    '',
-        comprobante: null,
-        terminos:    false,
+        nombres: '', apellidos: '', whatsapp: '', comprobante: null, terminos: false,
     });
 
     function submit(e) {
@@ -269,86 +264,56 @@ function RegistroForm({ sorteoId, terminos, onSuccess }) {
 
             <div className="grid grid-cols-2 gap-3">
                 <Field label="Nombres" error={errors.nombres}>
-                    <input
-                        type="text"
-                        value={data.nombres}
+                    <input type="text" value={data.nombres}
                         onChange={(e) => setData('nombres', e.target.value)}
-                        maxLength={100}
-                        className={inputCls(errors.nombres)}
-                        placeholder="Juan"
-                    />
+                        maxLength={100} className={inputCls(errors.nombres)} placeholder="Juan" />
                 </Field>
                 <Field label="Apellidos" error={errors.apellidos}>
-                    <input
-                        type="text"
-                        value={data.apellidos}
+                    <input type="text" value={data.apellidos}
                         onChange={(e) => setData('apellidos', e.target.value)}
-                        maxLength={100}
-                        className={inputCls(errors.apellidos)}
-                        placeholder="Pérez"
-                    />
+                        maxLength={100} className={inputCls(errors.apellidos)} placeholder="Pérez" />
                 </Field>
             </div>
 
             <Field label="WhatsApp" error={errors.whatsapp}>
-                <input
-                    type="tel"
-                    value={data.whatsapp}
+                <input type="tel" value={data.whatsapp}
                     onChange={(e) => setData('whatsapp', e.target.value)}
-                    maxLength={20}
-                    className={inputCls(errors.whatsapp)}
-                    placeholder="+51 999 999 999"
-                />
+                    maxLength={20} className={inputCls(errors.whatsapp)} placeholder="+51 999 999 999" />
             </Field>
 
-            {/* Upload comprobante */}
             <Field label="Foto del comprobante" error={errors.comprobante}>
                 <div
                     className={[
                         'cursor-pointer overflow-hidden border-2 border-dashed bg-surface2 transition-colors',
-                        errors.comprobante
-                            ? 'border-danger'
-                            : 'border-gold/30 hover:border-gold/60',
+                        errors.comprobante ? 'border-danger' : 'border-gold/30 hover:border-gold/60',
                     ].join(' ')}
                     onClick={() => fileRef.current?.click()}
                 >
                     {comprobantePreview ? (
-                        <img
-                            src={comprobantePreview}
-                            alt="Comprobante"
-                            className="max-h-48 w-full border border-gold/30 object-contain p-2"
-                        />
+                        <img src={comprobantePreview} alt="Comprobante"
+                            className="max-h-48 w-full border border-gold/30 object-contain p-2" />
                     ) : (
                         <div className="flex flex-col items-center gap-2 py-8 text-muted">
                             <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                             </svg>
-                            <span className="text-xs uppercase tracking-widest">
-                                Clic para subir la captura
-                            </span>
+                            <span className="text-xs uppercase tracking-widest">Clic para subir la captura</span>
                         </div>
                     )}
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
             </Field>
 
-            {/* Términos */}
             <div className="space-y-1">
                 <label className="flex cursor-pointer items-start gap-3 text-sm">
-                    <input
-                        type="checkbox"
-                        checked={data.terminos}
+                    <input type="checkbox" checked={data.terminos}
                         onChange={(e) => setData('terminos', e.target.checked)}
-                        className="mt-0.5 size-4 accent-gold"
-                    />
+                        className="mt-0.5 size-4 accent-gold" />
                     <span className="text-muted">
                         Acepto los{' '}
                         {terminos ? (
-                            <button
-                                type="button"
-                                onClick={() => alert(terminos)}
-                                className="text-gold underline hover:text-gold-light"
-                            >
+                            <button type="button" onClick={() => alert(terminos)}
+                                className="text-gold underline hover:text-gold-light">
                                 términos y condiciones
                             </button>
                         ) : (
@@ -357,18 +322,20 @@ function RegistroForm({ sorteoId, terminos, onSuccess }) {
                         del sorteo.
                     </span>
                 </label>
-                {errors.terminos && (
-                    <p className="text-xs text-danger">{errors.terminos}</p>
-                )}
+                {errors.terminos && <p className="text-xs text-danger">{errors.terminos}</p>}
             </div>
 
-            <button
+            {/* Botón con whileHover / whileTap */}
+            <motion.button
                 type="submit"
                 disabled={processing}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 className="w-full bg-danger py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-danger-dark disabled:opacity-50"
             >
                 {processing ? 'Enviando…' : 'ENVIAR REGISTRO'}
-            </button>
+            </motion.button>
         </form>
     );
 }
@@ -384,9 +351,7 @@ function inputCls(error) {
 function Field({ label, error, children }) {
     return (
         <div className="space-y-1.5">
-            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">
-                {label}
-            </label>
+            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">{label}</label>
             {children}
             {error && <p className="text-xs text-danger">{error}</p>}
         </div>
@@ -394,18 +359,8 @@ function Field({ label, error, children }) {
 }
 
 function buildUnits(cd) {
-    if (cd.days > 0) {
-        return [
-            { v: cd.days,    l: 'días' },
-            { v: cd.hours,   l: 'horas' },
-            { v: cd.minutes, l: 'min' },
-        ];
-    }
-    return [
-        { v: cd.hours,   l: 'horas' },
-        { v: cd.minutes, l: 'min' },
-        { v: cd.seconds, l: 'seg' },
-    ];
+    if (cd.days > 0) return [{ v: cd.days, l: 'días' }, { v: cd.hours, l: 'horas' }, { v: cd.minutes, l: 'min' }];
+    return [{ v: cd.hours, l: 'horas' }, { v: cd.minutes, l: 'min' }, { v: cd.seconds, l: 'seg' }];
 }
 
 /* ── Hook countdown ── */
@@ -433,7 +388,6 @@ function useCountdown(iso) {
     return diff;
 }
 
-/* ── Ícono calendario ── */
 function IconCalendar() {
     return (
         <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

@@ -1,9 +1,38 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import { router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 const TIPO_LABEL = {
     bingo: 'BINGO', pozito: 'POZITO', especial: 'ESPECIAL', aniversario: 'ANIVERSARIO',
+};
+
+/* ── Variants compartidos ── */
+const heroContainer = {
+    hidden:   {},
+    visible:  { transition: { staggerChildren: 0.15 } },
+};
+const heroItem = {
+    hidden:   { opacity: 0, y: 30 },
+    visible:  { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
+
+const cardContainer = {
+    hidden:  {},
+    visible: { transition: { staggerChildren: 0.1 } },
+};
+const cardItem = {
+    hidden:  { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+};
+
+const chipContainer = {
+    hidden:  {},
+    visible: { transition: { staggerChildren: 0.06 } },
+};
+const chipItem = {
+    hidden:  { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
 export default function Landing({ sorteos_activos, ganadores_recientes, config, proxima_fecha }) {
@@ -39,29 +68,39 @@ function HeroSection({ config, proxima_fecha }) {
     const countdown = useCountdown(proxima_fecha);
 
     return (
-        <section
-            className="relative overflow-hidden bg-bg px-4 py-16 text-center md:py-24"
-            style={{
-                backgroundImage: 'radial-gradient(circle, rgba(212,175,55,0.07) 1px, transparent 1px)',
-                backgroundSize: '28px 28px',
-            }}
-        >
-            {/* Glow radial dorado */}
-            <div
+        <section className="relative overflow-hidden bg-bg px-4 py-16 text-center md:py-24">
+            {/* Fondo con puntos — escala pulsante sutil */}
+            <motion.div
                 className="pointer-events-none absolute inset-0"
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
-                    background:
-                        'radial-gradient(ellipse 70% 50% at 50% 35%, rgba(212,175,55,0.10), transparent 70%)',
+                    backgroundImage: 'radial-gradient(circle, rgba(212,175,55,0.07) 1px, transparent 1px)',
+                    backgroundSize: '28px 28px',
                 }}
             />
 
-            <div className="relative mx-auto max-w-4xl">
-                <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.3em] text-muted">
-                    Sorteos en vivo · Facebook Live
-                </p>
+            {/* Glow radial */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 35%, rgba(212,175,55,0.10), transparent 70%)' }}
+            />
 
-                {/* Título principal */}
-                <h1 className="font-display leading-none">
+            {/* Contenido con stagger */}
+            <motion.div
+                className="relative mx-auto max-w-4xl"
+                variants={heroContainer}
+                initial="hidden"
+                animate="visible"
+            >
+                <motion.p
+                    variants={heroItem}
+                    className="mb-4 text-[10px] font-medium uppercase tracking-[0.3em] text-muted"
+                >
+                    Sorteos en vivo · Facebook Live
+                </motion.p>
+
+                <motion.h1 variants={heroItem} className="font-display leading-none">
                     <span className="block text-7xl text-cream md:text-9xl">GANA</span>
                     <span
                         className="block text-7xl md:text-9xl"
@@ -73,16 +112,16 @@ function HeroSection({ config, proxima_fecha }) {
                     >
                         PREMIOS
                     </span>
-                </h1>
+                </motion.h1>
 
-                <p className="mx-auto mt-6 max-w-lg font-light text-muted">
+                <motion.p variants={heroItem} className="mx-auto mt-6 max-w-lg font-light text-muted">
                     Participa en nuestros sorteos y bingos en vivo por Facebook. Registra tu
                     comprobante y espera el resultado en directo.
-                </p>
+                </motion.p>
 
                 {/* Countdown */}
                 {proxima_fecha && countdown && !countdown.expired && (
-                    <div className="mt-10">
+                    <motion.div variants={heroItem} className="mt-10">
                         <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-muted">
                             Próximo sorteo en
                         </p>
@@ -108,17 +147,17 @@ function HeroSection({ config, proxima_fecha }) {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 {countdown?.expired && (
-                    <p className="mt-8 font-display text-3xl tracking-widest text-gold">
+                    <motion.p variants={heroItem} className="mt-8 font-display text-3xl tracking-widest text-gold">
                         ¡EL SORTEO ESTÁ EN CURSO!
-                    </p>
+                    </motion.p>
                 )}
 
                 {/* CTA */}
-                <div className="mt-10 flex flex-wrap justify-center gap-4">
+                <motion.div variants={heroItem} className="mt-10 flex flex-wrap justify-center gap-4">
                     <button
                         type="button"
                         onClick={() => router.visit('/sorteos')}
@@ -136,14 +175,14 @@ function HeroSection({ config, proxima_fecha }) {
                             Ver en vivo
                         </a>
                     )}
-                </div>
+                </motion.div>
 
                 {config.mensaje_destacado && (
-                    <p className="mx-auto mt-8 max-w-lg text-sm text-muted">
+                    <motion.p variants={heroItem} className="mx-auto mt-8 max-w-lg text-sm text-muted">
                         ✦ {config.mensaje_destacado}
-                    </p>
+                    </motion.p>
                 )}
-            </div>
+            </motion.div>
         </section>
     );
 }
@@ -151,7 +190,6 @@ function HeroSection({ config, proxima_fecha }) {
 /* ── Stream ── */
 function StreamSection({ config }) {
     const { estado_stream, url_stream_live, url_stream_grabado } = config;
-
     if (!estado_stream) return null;
     const isLive = estado_stream === 'en_vivo';
     const url = isLive ? url_stream_live : url_stream_grabado;
@@ -171,7 +209,6 @@ function StreamSection({ config }) {
                     </h2>
                 </div>
 
-                {/* Contenedor 16:9 */}
                 <div
                     className="relative aspect-video w-full overflow-hidden border border-gold/30 bg-surface2"
                     style={{ boxShadow: '0 0 48px rgba(212,175,55,0.07), 0 0 0 1px rgba(212,175,55,0.04)' }}
@@ -195,9 +232,7 @@ function StreamSection({ config }) {
                             <svg className="size-14 text-gold/20" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />
                             </svg>
-                            <p className="text-xs uppercase tracking-widest text-muted">
-                                Sin transmisión activa
-                            </p>
+                            <p className="text-xs uppercase tracking-widest text-muted">Sin transmisión activa</p>
                         </div>
                     )}
                 </div>
@@ -214,11 +249,24 @@ function SorteosSection({ sorteos }) {
                 <h2 className="mb-10 border-l-4 border-gold pl-5 font-display text-5xl text-cream">
                     SORTEOS ACTIVOS
                 </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <motion.div
+                    className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    variants={cardContainer}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
                     {sorteos.map((s) => (
-                        <SorteoCard key={s.id} sorteo={s} />
+                        <motion.div
+                            key={s.id}
+                            variants={cardItem}
+                            whileHover={{ scale: 1.01 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                        >
+                            <SorteoCard sorteo={s} />
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </section>
     );
@@ -226,8 +274,7 @@ function SorteosSection({ sorteos }) {
 
 function SorteoCard({ sorteo }) {
     return (
-        <div className="flex flex-col border border-gold/20 bg-surface transition-colors hover:border-gold/60">
-            {/* Header de card */}
+        <div className="flex h-full flex-col border border-gold/20 bg-surface transition-colors hover:border-gold/60">
             <div className="flex items-center justify-between gap-2 border-b border-gold/10 bg-surface2 px-4 py-3">
                 <span className="font-display text-xl tracking-widest text-gold">
                     {TIPO_LABEL[sorteo.tipo] ?? sorteo.tipo.toUpperCase()}
@@ -236,16 +283,13 @@ function SorteoCard({ sorteo }) {
                     S/ {Number(sorteo.precio_participacion).toFixed(2)}
                 </span>
             </div>
-
             <div className="flex flex-1 flex-col p-4">
                 <h3 className="mb-1 text-sm font-semibold text-cream">{sorteo.nombre}</h3>
                 <p className="mb-4 text-xs text-muted">
                     {new Date(sorteo.fecha_sorteo).toLocaleString('es-PE', {
-                        dateStyle: 'long',
-                        timeStyle: 'short',
+                        dateStyle: 'long', timeStyle: 'short',
                     })}
                 </p>
-
                 {sorteo.premios?.length > 0 && (
                     <ul className="mb-5 flex-1 space-y-2">
                         {sorteo.premios.slice(0, 4).map((p) => (
@@ -260,13 +304,10 @@ function SorteoCard({ sorteo }) {
                             </li>
                         ))}
                         {sorteo.premios.length > 4 && (
-                            <li className="text-[11px] text-muted">
-                                +{sorteo.premios.length - 4} premios más
-                            </li>
+                            <li className="text-[11px] text-muted">+{sorteo.premios.length - 4} premios más</li>
                         )}
                     </ul>
                 )}
-
                 <button
                     type="button"
                     onClick={() => router.visit(`/sorteos/${sorteo.id}`)}
@@ -287,10 +328,17 @@ function GanadoresSection({ ganadores }) {
                 <h2 className="mb-8 border-l-4 border-gold pl-5 font-display text-5xl text-cream">
                     GANADORES RECIENTES
                 </h2>
-                <div className="flex flex-wrap gap-3">
+                <motion.div
+                    className="flex flex-wrap gap-3"
+                    variants={chipContainer}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                >
                     {ganadores.map((g) => (
-                        <div
+                        <motion.div
                             key={g.id}
+                            variants={chipItem}
                             className="border border-gold/30 bg-surface px-4 py-3"
                         >
                             <p className="text-sm font-semibold text-cream">
@@ -298,9 +346,9 @@ function GanadoresSection({ ganadores }) {
                             </p>
                             <p className="text-xs font-bold text-gold">{g.premio?.nombre}</p>
                             <p className="text-[11px] text-muted">{g.sorteo?.nombre}</p>
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </section>
     );
@@ -317,9 +365,7 @@ function SeguridadBanner({ config }) {
                 <div className="flex items-start gap-4">
                     <span className="shrink-0 text-xl text-danger">⚠</span>
                     <div>
-                        <p className="font-display text-2xl tracking-widest text-danger">
-                            AVISO DE SEGURIDAD
-                        </p>
+                        <p className="font-display text-2xl tracking-widest text-danger">AVISO DE SEGURIDAD</p>
                         {alerta && <p className="mt-2 text-sm text-cream">{alerta}</p>}
                         {titular && (
                             <p className="mt-3 text-xs text-muted">
@@ -352,11 +398,9 @@ function useCountdown(iso) {
     const [diff, setDiff] = useState(() => calcDiff(iso));
     const ref = useRef(iso);
     ref.current = iso;
-
     useEffect(() => {
         const id = setInterval(() => setDiff(calcDiff(ref.current)), 1000);
         return () => clearInterval(id);
     }, []);
-
     return diff;
 }

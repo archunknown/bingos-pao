@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 const NAV = [
@@ -7,6 +8,11 @@ const NAV = [
     { label: 'Ganadores',        href: '/ganadores' },
     { label: 'Mi Participación', href: '/mi-participacion' },
 ];
+
+const navUnderline = {
+    rest:  { scaleX: 0 },
+    hover: { scaleX: 1, transition: { duration: 0.2, ease: 'easeOut' } },
+};
 
 export default function PublicLayout({ children }) {
     const { config_publica, flash, auth } = usePage().props;
@@ -40,9 +46,7 @@ export default function PublicLayout({ children }) {
             {/* Toast */}
             {toast && (
                 <div className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-semibold shadow-xl ${
-                    toast.type === 'success'
-                        ? 'bg-success text-white'
-                        : 'bg-danger text-white'
+                    toast.type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'
                 }`}>
                     {toast.msg}
                 </div>
@@ -55,8 +59,13 @@ export default function PublicLayout({ children }) {
                 </div>
             )}
 
-            {/* Navbar */}
-            <header className="sticky top-0 z-30 border-b border-gold/20 bg-bg/95 backdrop-blur">
+            {/* Navbar — slide down al montar */}
+            <motion.header
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="sticky top-0 z-30 border-b border-gold/20 bg-bg/95 backdrop-blur"
+            >
                 <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
 
                     {/* Logo */}
@@ -72,29 +81,41 @@ export default function PublicLayout({ children }) {
                                 {nombre.charAt(0)}
                             </div>
                         )}
-                        <span className="font-display text-xl tracking-widest text-gold">
-                            {nombre}
-                        </span>
+                        <span className="font-display text-xl tracking-widest text-gold">{nombre}</span>
                     </button>
 
-                    {/* Nav desktop */}
+                    {/* Nav desktop con underline animado */}
                     <nav className="hidden items-center gap-1 md:flex">
                         {NAV.map(({ label, href }) => {
                             const active = isActive(href);
+                            if (active) {
+                                return (
+                                    <button
+                                        key={href}
+                                        type="button"
+                                        onClick={() => router.visit(href)}
+                                        className="relative px-3 py-1.5 text-sm text-gold after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-gold after:content-['']"
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            }
                             return (
-                                <button
+                                <motion.button
                                     key={href}
                                     type="button"
+                                    initial="rest"
+                                    whileHover="hover"
+                                    animate="rest"
                                     onClick={() => router.visit(href)}
-                                    className={[
-                                        'relative px-3 py-1.5 text-sm transition-colors',
-                                        active
-                                            ? 'text-gold after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-gold after:content-[""]'
-                                            : 'text-muted hover:text-cream',
-                                    ].join(' ')}
+                                    className="relative px-3 py-1.5 text-sm text-muted transition-colors hover:text-cream"
                                 >
                                     {label}
-                                </button>
+                                    <motion.span
+                                        variants={navUnderline}
+                                        className="absolute bottom-0 left-3 right-3 h-[2px] origin-left bg-gold/60"
+                                    />
+                                </motion.button>
                             );
                         })}
                     </nav>
@@ -159,7 +180,7 @@ export default function PublicLayout({ children }) {
                         </button>
                     </div>
                 )}
-            </header>
+            </motion.header>
 
             {/* Contenido */}
             <main className="flex-1">{children}</main>

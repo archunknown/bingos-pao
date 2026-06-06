@@ -1,5 +1,15 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import { router, useForm } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+
+const listContainer = {
+    hidden:  {},
+    visible: { transition: { staggerChildren: 0.08 } },
+};
+const listItem = {
+    hidden:  { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+};
 
 function estadoDisplay(participante) {
     if (participante.sorteo_estado === 'cerrado' && participante.estado === 'confirmado') {
@@ -32,17 +42,28 @@ export default function MiParticipacion({ resultados, busqueda }) {
             <div className="mx-auto max-w-2xl px-4 py-12 md:py-16">
 
                 {/* Header */}
-                <div className="mb-10">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    className="mb-10"
+                >
                     <h1 className="border-l-4 border-gold pl-4 font-display text-5xl text-cream">
                         MI PARTICIPACIÓN
                     </h1>
                     <p className="mt-3 pl-5 text-sm text-muted">
                         Ingresa tu número de WhatsApp para consultar el estado de tus registros.
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Buscador */}
-                <form onSubmit={submit} noValidate>
+                <motion.form
+                    onSubmit={submit}
+                    noValidate
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
+                >
                     <div className="flex">
                         <input
                             type="tel"
@@ -66,7 +87,7 @@ export default function MiParticipacion({ resultados, busqueda }) {
                     {errors.whatsapp && (
                         <p className="mt-1.5 text-xs text-danger">{errors.whatsapp}</p>
                     )}
-                </form>
+                </motion.form>
 
                 {/* Resultados */}
                 {buscado && (
@@ -74,18 +95,26 @@ export default function MiParticipacion({ resultados, busqueda }) {
                         {resultados.length === 0 ? (
                             <EmptyState whatsapp={busqueda} />
                         ) : (
-                            <div className="space-y-3">
-                                <p className="text-xs text-muted">
+                            <>
+                                <p className="mb-3 text-xs text-muted">
                                     {resultados.length}{' '}
                                     registro{resultados.length !== 1 ? 's' : ''}{' '}
                                     encontrado{resultados.length !== 1 ? 's' : ''}{' '}
-                                    para{' '}
-                                    <span className="text-content">{busqueda}</span>
+                                    para <span className="text-content">{busqueda}</span>
                                 </p>
-                                {resultados.map((p) => (
-                                    <ResultadoCard key={p.id} participante={p} />
-                                ))}
-                            </div>
+                                <motion.div
+                                    className="space-y-3"
+                                    variants={listContainer}
+                                    initial="hidden"
+                                    animate="visible"
+                                >
+                                    {resultados.map((p) => (
+                                        <motion.div key={p.id} variants={listItem}>
+                                            <ResultadoCard participante={p} />
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            </>
                         )}
                     </div>
                 )}
@@ -102,33 +131,23 @@ function ResultadoCard({ participante }) {
         <div className="border border-gold/20 bg-surface px-5 py-4 transition-colors hover:border-gold/40">
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                    {/* Número de registro */}
                     <p className="font-display text-3xl leading-none text-gold">
                         {participante.numero_registro ?? '—'}
                     </p>
-
-                    {/* Nombre participante */}
                     <p className="mt-1 text-xs text-muted">
                         {participante.nombres} {participante.apellidos}
                     </p>
-
-                    {/* Nombre sorteo */}
                     <p className="mt-2 truncate text-sm font-semibold text-cream">
                         {participante.sorteo_nombre ?? '—'}
                     </p>
-
-                    {/* Fecha */}
                     {participante.sorteo_fecha && (
                         <p className="mt-0.5 text-xs text-muted">
                             {new Date(participante.sorteo_fecha).toLocaleString('es-PE', {
-                                dateStyle: 'medium',
-                                timeStyle: 'short',
+                                dateStyle: 'medium', timeStyle: 'short',
                             })}
                         </p>
                     )}
                 </div>
-
-                {/* Badge de estado */}
                 <span className={`shrink-0 border px-3 py-1 text-xs font-bold uppercase tracking-wider ${cls}`}>
                     {label}
                 </span>
@@ -140,7 +159,12 @@ function ResultadoCard({ participante }) {
 /* ── Estado vacío ── */
 function EmptyState({ whatsapp }) {
     return (
-        <div className="border border-gold/10 bg-surface px-6 py-14 text-center">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35 }}
+            className="border border-gold/10 bg-surface px-6 py-14 text-center"
+        >
             <p className="font-display text-6xl text-gold/20">🔍</p>
             <p className="mt-4 text-sm font-semibold text-muted">Sin resultados</p>
             <p className="mx-auto mt-2 max-w-xs text-sm text-muted">
@@ -155,6 +179,6 @@ function EmptyState({ whatsapp }) {
             >
                 Ver sorteos activos
             </button>
-        </div>
+        </motion.div>
     );
 }
