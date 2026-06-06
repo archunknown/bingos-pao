@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::get('/sorteos', [SorteoPublicoController::class, 'index'])->name('sorteos.index');
 Route::get('/sorteos/{sorteo}', [SorteoPublicoController::class, 'show'])->name('sorteos.show');
-Route::post('/sorteos/{sorteo}/registrar', [SorteoPublicoController::class, 'store'])->name('sorteos.registrar');
+Route::post('/sorteos/{sorteo}/registrar', [SorteoPublicoController::class, 'store'])->name('sorteos.registrar')->middleware('throttle:5,1');
 Route::get('/ganadores', [GanadoresPublicoController::class, 'index'])->name('ganadores');
 Route::get('/mi-participacion', [MiParticipacionController::class, 'index'])->name('mi-participacion');
 
