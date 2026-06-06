@@ -2,7 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Configuracion;
+use App\Models\Participante;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -22,6 +25,21 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
+    private static function configPublica(): array
+    {
+        $textos = ['nombre_negocio', 'alerta_seguridad_texto', 'titular_pago'];
+
+        $config = [];
+        foreach ($textos as $clave) {
+            $config[$clave] = Configuracion::get($clave) ?? '';
+        }
+
+        $logoPath = Configuracion::get('logo_path');
+        $config['logo_url'] = $logoPath ? Storage::url($logoPath) : null;
+
+        return $config;
+    }
+
     /**
      * Define the props that are shared by default.
      *
@@ -39,8 +57,9 @@ class HandleInertiaRequests extends Middleware
                 'error'   => $request->session()->get('error'),
             ],
             'pendientes_count' => $request->user()
-                ? \App\Models\Participante::where('estado', 'pendiente')->count()
+                ? Participante::where('estado', 'pendiente')->count()
                 : 0,
+            'config_publica' => static::configPublica(),
         ];
     }
 }
