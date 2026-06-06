@@ -93,11 +93,9 @@ export default function SorteoPublico({ sorteo, config }) {
                                 <ul className="divide-y divide-gold/10">
                                     {sorteo.premios.map((p) => (
                                         <li key={p.id} className="flex items-center gap-3 px-5 py-3.5">
-                                            {p.cantidad > 1 && (
-                                                <span className="shrink-0 border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[10px] font-bold text-gold">
-                                                    ×{p.cantidad}
-                                                </span>
-                                            )}
+                                            <span className="shrink-0 border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[10px] font-bold text-gold">
+                                                ×{p.cantidad}
+                                            </span>
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-sm text-cream">{p.nombre}</p>
                                                 {p.descripcion_premio && (
@@ -234,9 +232,52 @@ function SuccessState({ whatsapp }) {
     );
 }
 
+/* ── Modal de Términos y Condiciones ── */
+function TerminosModal({ terminos, onClose }) {
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+            onClick={onClose}
+        >
+            <div
+                className="relative max-h-[80vh] w-full max-w-lg overflow-y-auto border border-gold/30 bg-surface shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="flex items-center justify-between border-b border-gold/20 px-6 py-4">
+                    <h3 className="font-display text-2xl text-gold">TÉRMINOS Y CONDICIONES</h3>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="text-muted transition-colors hover:text-cream"
+                        aria-label="Cerrar"
+                    >
+                        <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="whitespace-pre-wrap px-6 py-5 text-sm leading-relaxed text-content">
+                    {terminos}
+                </div>
+                <div className="border-t border-gold/20 px-6 py-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="w-full bg-gold py-2.5 text-sm font-bold uppercase tracking-widest text-bg transition-colors hover:bg-gold-light"
+                    >
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ── Formulario de registro ── */
 function RegistroForm({ sorteoId, terminos, onSuccess }) {
     const [comprobantePreview, setPreview] = useState(null);
+    const [showTerminos, setShowTerminos] = useState(false);
     const fileRef = useRef(null);
 
     const { data, setData, post, processing, errors } = useForm({
@@ -258,85 +299,103 @@ function RegistroForm({ sorteoId, terminos, onSuccess }) {
         setPreview(URL.createObjectURL(file));
     }
 
+    function onWhatsappChange(e) {
+        const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
+        setData('whatsapp', digits);
+    }
+
     return (
-        <form onSubmit={submit} noValidate className="space-y-5 border border-gold/20 bg-surface p-5">
-            <h2 className="font-display text-3xl text-cream">REGISTRAR PARTICIPACIÓN</h2>
+        <>
+            {showTerminos && terminos && (
+                <TerminosModal terminos={terminos} onClose={() => setShowTerminos(false)} />
+            )}
 
-            <div className="grid grid-cols-2 gap-3">
-                <Field label="Nombres" error={errors.nombres}>
-                    <input type="text" value={data.nombres}
-                        onChange={(e) => setData('nombres', e.target.value)}
-                        maxLength={100} className={inputCls(errors.nombres)} placeholder="Juan" />
-                </Field>
-                <Field label="Apellidos" error={errors.apellidos}>
-                    <input type="text" value={data.apellidos}
-                        onChange={(e) => setData('apellidos', e.target.value)}
-                        maxLength={100} className={inputCls(errors.apellidos)} placeholder="Pérez" />
-                </Field>
-            </div>
+            <form onSubmit={submit} noValidate className="space-y-5 border border-gold/20 bg-surface p-5">
+                <h2 className="font-display text-3xl text-cream">REGISTRAR PARTICIPACIÓN</h2>
 
-            <Field label="WhatsApp" error={errors.whatsapp}>
-                <input type="tel" value={data.whatsapp}
-                    onChange={(e) => setData('whatsapp', e.target.value)}
-                    maxLength={20} className={inputCls(errors.whatsapp)} placeholder="+51 999 999 999" />
-            </Field>
-
-            <Field label="Foto del comprobante" error={errors.comprobante}>
-                <div
-                    className={[
-                        'cursor-pointer overflow-hidden border-2 border-dashed bg-surface2 transition-colors',
-                        errors.comprobante ? 'border-danger' : 'border-gold/30 hover:border-gold/60',
-                    ].join(' ')}
-                    onClick={() => fileRef.current?.click()}
-                >
-                    {comprobantePreview ? (
-                        <img src={comprobantePreview} alt="Comprobante"
-                            className="max-h-48 w-full border border-gold/30 object-contain p-2" />
-                    ) : (
-                        <div className="flex flex-col items-center gap-2 py-8 text-muted">
-                            <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                            </svg>
-                            <span className="text-xs uppercase tracking-widest">Clic para subir la captura</span>
-                        </div>
-                    )}
+                <div className="grid grid-cols-2 gap-3">
+                    <Field label="Nombres" error={errors.nombres}>
+                        <input type="text" value={data.nombres}
+                            onChange={(e) => setData('nombres', e.target.value)}
+                            maxLength={100} className={inputCls(errors.nombres)} placeholder="Juan" />
+                    </Field>
+                    <Field label="Apellidos" error={errors.apellidos}>
+                        <input type="text" value={data.apellidos}
+                            onChange={(e) => setData('apellidos', e.target.value)}
+                            maxLength={100} className={inputCls(errors.apellidos)} placeholder="Pérez" />
+                    </Field>
                 </div>
-                <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
-            </Field>
 
-            <div className="space-y-1">
-                <label className="flex cursor-pointer items-start gap-3 text-sm">
-                    <input type="checkbox" checked={data.terminos}
-                        onChange={(e) => setData('terminos', e.target.checked)}
-                        className="mt-0.5 size-4 accent-gold" />
-                    <span className="text-muted">
-                        Acepto los{' '}
-                        {terminos ? (
-                            <button type="button" onClick={() => alert(terminos)}
-                                className="text-gold underline hover:text-gold-light">
-                                términos y condiciones
-                            </button>
+                <Field label="WhatsApp" error={errors.whatsapp}>
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        value={data.whatsapp}
+                        onChange={onWhatsappChange}
+                        maxLength={9}
+                        pattern="\d{9}"
+                        className={inputCls(errors.whatsapp)}
+                        placeholder="999999999"
+                    />
+                </Field>
+
+                <Field label="Foto del comprobante" error={errors.comprobante}>
+                    <div
+                        className={[
+                            'cursor-pointer overflow-hidden border-2 border-dashed bg-surface2 transition-colors',
+                            errors.comprobante ? 'border-danger' : 'border-gold/30 hover:border-gold/60',
+                        ].join(' ')}
+                        onClick={() => fileRef.current?.click()}
+                    >
+                        {comprobantePreview ? (
+                            <img src={comprobantePreview} alt="Comprobante"
+                                className="max-h-48 w-full border border-gold/30 object-contain p-2" />
                         ) : (
-                            <span className="text-gold">términos y condiciones</span>
-                        )}{' '}
-                        del sorteo.
-                    </span>
-                </label>
-                {errors.terminos && <p className="text-xs text-danger">{errors.terminos}</p>}
-            </div>
+                            <div className="flex flex-col items-center gap-2 py-8 text-muted">
+                                <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                </svg>
+                                <span className="text-xs uppercase tracking-widest">Clic para subir la captura</span>
+                            </div>
+                        )}
+                    </div>
+                    <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
+                </Field>
 
-            {/* Botón con whileHover / whileTap */}
-            <motion.button
-                type="submit"
-                disabled={processing}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className="w-full bg-danger py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-danger-dark disabled:opacity-50"
-            >
-                {processing ? 'Enviando…' : 'ENVIAR REGISTRO'}
-            </motion.button>
-        </form>
+                <div className="space-y-1">
+                    <label className="flex cursor-pointer items-start gap-3 text-sm">
+                        <input type="checkbox" checked={data.terminos}
+                            onChange={(e) => setData('terminos', e.target.checked)}
+                            className="mt-0.5 size-4 accent-gold" />
+                        <span className="text-muted">
+                            Acepto los{' '}
+                            {terminos ? (
+                                <button type="button" onClick={() => setShowTerminos(true)}
+                                    className="text-gold underline hover:text-gold-light">
+                                    términos y condiciones
+                                </button>
+                            ) : (
+                                <span className="text-gold">términos y condiciones</span>
+                            )}{' '}
+                            del sorteo.
+                        </span>
+                    </label>
+                    {errors.terminos && <p className="text-xs text-danger">{errors.terminos}</p>}
+                </div>
+
+                {/* Botón con whileHover / whileTap */}
+                <motion.button
+                    type="submit"
+                    disabled={processing}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="w-full bg-danger py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-danger-dark disabled:opacity-50"
+                >
+                    {processing ? 'Enviando…' : 'ENVIAR REGISTRO'}
+                </motion.button>
+            </form>
+        </>
     );
 }
 
