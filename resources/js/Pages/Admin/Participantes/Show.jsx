@@ -2,10 +2,10 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-const ESTADO_STYLE = {
-    pendiente:  'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-    confirmado: 'bg-green-500/20  text-green-300  border-green-500/30',
-    rechazado:  'bg-red-500/20    text-red-300    border-red-500/30',
+const ESTADO_BADGE = {
+    pendiente:  'bg-gold/10 text-gold border-gold/30',
+    confirmado: 'bg-success/10 text-success border-success/30',
+    rechazado:  'bg-danger/10 text-danger border-danger/30',
 };
 
 export default function ParticipanteShow({ participante, comprobante_url }) {
@@ -31,8 +31,8 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
     return (
         <AdminLayout>
             {toast && (
-                <div className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
+                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
                 }`}>
                     {toast.msg}
                 </div>
@@ -44,30 +44,30 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                     <button
                         type="button"
                         onClick={() => router.visit('/admin/participantes')}
-                        className="text-slate-400 hover:text-white"
+                        className="text-muted transition-colors hover:text-cream"
                         aria-label="Volver"
                     >
                         ←
                     </button>
                     <div>
-                        <h1 className="font-[BebasNeue,sans-serif] text-3xl tracking-wide text-white">
+                        <h1 className="font-display text-4xl text-cream">
                             {participante.nombres} {participante.apellidos}
                         </h1>
-                        <p className="text-sm text-slate-400">{participante.sorteo?.nombre}</p>
+                        <p className="text-sm text-muted">{participante.sorteo?.nombre}</p>
                     </div>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                    {/* Datos del participante */}
-                    <div className="space-y-4 rounded-xl border border-slate-700 bg-slate-800 p-5">
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                            Datos
+                    {/* Datos */}
+                    <div className="space-y-4 border border-gold/20 bg-surface p-5">
+                        <h2 className="border-l-4 border-gold pl-3 font-display text-2xl text-gold">
+                            DATOS
                         </h2>
 
                         <dl className="space-y-3 text-sm">
                             <DataRow label="N° registro" value={participante.numero_registro ?? '—'} mono />
                             <DataRow label="Estado">
-                                <span className={`inline-block rounded-full border px-3 py-0.5 text-xs font-medium capitalize ${ESTADO_STYLE[participante.estado] ?? ''}`}>
+                                <span className={`inline-block border px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${ESTADO_BADGE[participante.estado] ?? ''}`}>
                                     {participante.estado}
                                 </span>
                             </DataRow>
@@ -77,8 +77,7 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                             <DataRow
                                 label="Registrado"
                                 value={new Date(participante.created_at).toLocaleString('es-PE', {
-                                    dateStyle: 'long',
-                                    timeStyle: 'short',
+                                    dateStyle: 'long', timeStyle: 'short',
                                 })}
                             />
                             {participante.nota_interna && (
@@ -92,21 +91,20 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                                 <button
                                     type="button"
                                     onClick={confirmar}
-                                    className="flex-1 rounded-lg bg-green-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+                                    className="flex-1 bg-success py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
                                 >
                                     CONFIRMAR
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setRechazar(true)}
-                                    className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                                    className="flex-1 border border-danger/30 bg-danger/10 py-2.5 text-sm font-bold uppercase tracking-wider text-danger transition-colors hover:bg-danger hover:text-white"
                                 >
                                     RECHAZAR
                                 </button>
                             </div>
                         )}
 
-                        {/* Formulario de rechazo inline */}
                         {rechazarOpen && (
                             <RechazarForm
                                 participanteId={participante.id}
@@ -116,9 +114,9 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                     </div>
 
                     {/* Comprobante */}
-                    <div className="space-y-3 rounded-xl border border-slate-700 bg-slate-800 p-5">
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                            Comprobante de pago
+                    <div className="space-y-3 border border-gold/20 bg-surface p-5">
+                        <h2 className="border-l-4 border-gold pl-3 font-display text-2xl text-gold">
+                            COMPROBANTE
                         </h2>
 
                         {comprobante_url ? (
@@ -126,15 +124,15 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                                 <img
                                     src={comprobante_url}
                                     alt="Comprobante de pago"
-                                    className="w-full rounded-lg border border-slate-600 object-contain transition-opacity hover:opacity-90"
+                                    className="w-full border border-gold/20 object-contain transition-opacity hover:opacity-90"
                                     style={{ maxHeight: '480px' }}
                                 />
-                                <p className="mt-2 text-center text-xs text-slate-500">
+                                <p className="mt-2 text-center text-xs text-muted">
                                     Clic para abrir en pantalla completa
                                 </p>
                             </a>
                         ) : (
-                            <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-slate-600 text-slate-500">
+                            <div className="flex h-40 items-center justify-center border-2 border-dashed border-gold/20 text-muted">
                                 Sin comprobante
                             </div>
                         )}
@@ -145,11 +143,8 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
     );
 }
 
-/* ── Formulario de rechazo inline ── */
 function RechazarForm({ participanteId, onCancel }) {
-    const { data, setData, patch, processing, errors } = useForm({
-        nota_interna: '',
-    });
+    const { data, setData, patch, processing, errors } = useForm({ nota_interna: '' });
 
     function submit(e) {
         e.preventDefault();
@@ -157,34 +152,34 @@ function RechazarForm({ participanteId, onCancel }) {
     }
 
     return (
-        <form onSubmit={submit} className="space-y-3 rounded-lg border border-red-700/40 bg-red-950/30 p-4">
-            <p className="text-xs font-medium text-red-300">Motivo del rechazo</p>
+        <form onSubmit={submit} className="space-y-3 border border-danger/30 bg-danger/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-danger">Motivo del rechazo</p>
             <textarea
                 value={data.nota_interna}
                 onChange={(e) => setData('nota_interna', e.target.value)}
                 rows={3}
                 placeholder="Describe el motivo del rechazo…"
                 className={[
-                    'w-full resize-none rounded-lg border bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-red-500',
-                    errors.nota_interna ? 'border-red-500' : 'border-slate-600',
+                    'w-full resize-none border bg-surface2 px-3 py-2 text-sm text-cream placeholder-muted outline-none transition-colors',
+                    errors.nota_interna ? 'border-danger' : 'border-gold/20 focus:border-gold',
                 ].join(' ')}
                 autoFocus
             />
             {errors.nota_interna && (
-                <p className="text-xs text-red-400">{errors.nota_interna}</p>
+                <p className="text-xs text-danger">{errors.nota_interna}</p>
             )}
             <div className="flex gap-2">
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 ring-1 ring-slate-600 hover:bg-slate-700 hover:text-white"
+                    className="border border-gold/30 px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-gold hover:text-cream"
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
                     disabled={processing}
-                    className="rounded-lg bg-red-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                    className="bg-danger px-4 py-1.5 text-xs font-bold uppercase text-white transition-colors hover:bg-danger-dark disabled:opacity-50"
                 >
                     {processing ? 'Guardando…' : 'Confirmar rechazo'}
                 </button>
@@ -193,12 +188,11 @@ function RechazarForm({ participanteId, onCancel }) {
     );
 }
 
-/* ── Helper de fila de datos ── */
 function DataRow({ label, value, mono, children }) {
     return (
         <div className="flex justify-between gap-4">
-            <dt className="shrink-0 text-slate-400">{label}</dt>
-            <dd className={`text-right text-white ${mono ? 'font-mono' : ''}`}>
+            <dt className="shrink-0 text-muted">{label}</dt>
+            <dd className={`text-right text-cream ${mono ? 'font-mono' : ''}`}>
                 {children ?? value}
             </dd>
         </div>

@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function PremiosIndex({ sorteo, premios }) {
     const { flash } = usePage().props;
-
-    const [toast, setToast]       = useState(null);
-    const [modalOpen, setModal]   = useState(false);
-    const [editing, setEditing]   = useState(null); // premio object | null
+    const [toast, setToast]     = useState(null);
+    const [modalOpen, setModal] = useState(false);
+    const [editing, setEditing] = useState(null);
 
     useEffect(() => {
         const msg = flash?.success || flash?.error;
@@ -17,27 +16,12 @@ export default function PremiosIndex({ sorteo, premios }) {
         return () => clearTimeout(t);
     }, [flash]);
 
-    function openCreate() {
-        setEditing(null);
-        setModal(true);
-    }
-
-    function openEdit(premio) {
-        setEditing(premio);
-        setModal(true);
-    }
-
-    function closeModal() {
-        setModal(false);
-        setEditing(null);
-    }
+    function openCreate() { setEditing(null); setModal(true); }
+    function openEdit(p)  { setEditing(p);    setModal(true); }
+    function closeModal() { setModal(false);   setEditing(null); }
 
     function toggleVisible(premio) {
-        router.patch(
-            `/admin/premios/${premio.id}`,
-            { ...premio, visible: !premio.visible },
-            { preserveScroll: true },
-        );
+        router.patch(`/admin/premios/${premio.id}`, { ...premio, visible: !premio.visible }, { preserveScroll: true });
     }
 
     function destroy(premio) {
@@ -47,47 +31,42 @@ export default function PremiosIndex({ sorteo, premios }) {
 
     return (
         <AdminLayout>
-            {/* Toast */}
             {toast && (
-                <div className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
+                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
                 }`}>
                     {toast.msg}
                 </div>
             )}
 
             <div className="space-y-6">
-                {/* Header */}
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <button
                             type="button"
                             onClick={() => router.visit('/admin/sorteos')}
-                            className="mb-1 text-sm text-slate-400 hover:text-white"
+                            className="mb-1 text-sm text-muted transition-colors hover:text-cream"
                         >
                             ← Sorteos
                         </button>
-                        <h1 className="font-[BebasNeue,sans-serif] text-3xl tracking-wide text-white">
-                            Premios
-                        </h1>
-                        <p className="mt-0.5 text-sm text-slate-400">{sorteo.nombre}</p>
+                        <h1 className="font-display text-4xl text-cream">PREMIOS</h1>
+                        <p className="mt-0.5 text-sm text-muted">{sorteo.nombre}</p>
                     </div>
                     <button
                         type="button"
                         onClick={openCreate}
-                        className="rounded-lg bg-pink-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-700"
+                        className="bg-gold px-4 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light"
                     >
                         + Agregar premio
                     </button>
                 </div>
 
-                {/* Lista de premios */}
                 {premios.length === 0 ? (
-                    <div className="rounded-xl border border-slate-700 bg-slate-800 px-6 py-12 text-center text-slate-500">
+                    <div className="border border-gold/10 bg-surface px-6 py-12 text-center text-muted">
                         No hay premios aún. Agrega el primero.
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         {premios.map((p) => (
                             <PremioCard
                                 key={p.id}
@@ -101,31 +80,22 @@ export default function PremiosIndex({ sorteo, premios }) {
                 )}
             </div>
 
-            {/* Modal crear/editar */}
             {modalOpen && (
-                <PremioModal
-                    sorteoId={sorteo.id}
-                    premio={editing}
-                    onClose={closeModal}
-                />
+                <PremioModal sorteoId={sorteo.id} premio={editing} onClose={closeModal} />
             )}
         </AdminLayout>
     );
 }
 
-/* ── Tarjeta de premio ── */
 function PremioCard({ premio, onEdit, onDelete, onToggleVisible }) {
     return (
-        <div className="flex items-center gap-4 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3">
-            {/* Orden */}
-            <span className="w-8 shrink-0 text-center text-xs font-bold text-slate-500">
-                #{premio.orden}
+        <div className="flex items-center gap-4 border border-gold/20 bg-surface px-4 py-3 transition-colors hover:border-gold/40">
+            <span className="w-8 shrink-0 text-center font-display text-lg text-gold">
+                {premio.orden}
             </span>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-                <p className="truncate font-medium text-white">{premio.nombre}</p>
-                <p className="text-xs text-slate-400">
+            <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-cream">{premio.nombre}</p>
+                <p className="text-xs text-muted">
                     Cantidad: {premio.cantidad}
                     {premio.monto != null
                         ? ` · S/ ${Number(premio.monto).toFixed(2)}`
@@ -134,34 +104,30 @@ function PremioCard({ premio, onEdit, onDelete, onToggleVisible }) {
                         : ''}
                 </p>
             </div>
-
-            {/* Toggle visible */}
             <button
                 type="button"
                 onClick={onToggleVisible}
                 title={premio.visible ? 'Ocultar' : 'Mostrar'}
-                className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                className={`shrink-0 border px-2.5 py-0.5 text-xs font-medium transition-colors ${
                     premio.visible
-                        ? 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
-                        : 'bg-slate-600/40 text-slate-400 hover:bg-slate-600'
+                        ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
+                        : 'bg-surface2 text-muted border-muted/20 hover:text-cream'
                 }`}
             >
                 {premio.visible ? 'Visible' : 'Oculto'}
             </button>
-
-            {/* Acciones */}
             <div className="flex shrink-0 gap-2">
                 <button
                     type="button"
                     onClick={onEdit}
-                    className="rounded px-2.5 py-1 text-xs font-medium text-slate-300 ring-1 ring-slate-600 transition-colors hover:bg-slate-700 hover:text-white"
+                    className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:border-gold hover:text-cream"
                 >
                     Editar
                 </button>
                 <button
                     type="button"
                     onClick={onDelete}
-                    className="rounded px-2.5 py-1 text-xs font-medium text-red-400 ring-1 ring-red-700 transition-colors hover:bg-red-700 hover:text-white"
+                    className="border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger transition-colors hover:bg-danger hover:text-white"
                 >
                     Eliminar
                 </button>
@@ -170,34 +136,28 @@ function PremioCard({ premio, onEdit, onDelete, onToggleVisible }) {
     );
 }
 
-/* ── Modal de formulario ── */
 function PremioModal({ sorteoId, premio, onClose }) {
     const isEditing = !!premio;
     const overlayRef = useRef(null);
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
-        nombre:            premio?.nombre            ?? '',
-        cantidad:          premio?.cantidad          ?? 1,
-        monto:             premio?.monto             ?? '',
+        nombre:             premio?.nombre             ?? '',
+        cantidad:           premio?.cantidad           ?? 1,
+        monto:              premio?.monto              ?? '',
         descripcion_premio: premio?.descripcion_premio ?? '',
-        visible:           premio?.visible           ?? true,
-        orden:             premio?.orden             ?? 0,
+        visible:            premio?.visible            ?? true,
+        orden:              premio?.orden              ?? 0,
     });
 
     function submit(e) {
         e.preventDefault();
         if (isEditing) {
-            put(`/admin/premios/${premio.id}`, {
-                onSuccess: () => { reset(); onClose(); },
-            });
+            put(`/admin/premios/${premio.id}`, { onSuccess: () => { reset(); onClose(); } });
         } else {
-            post(`/admin/sorteos/${sorteoId}/premios`, {
-                onSuccess: () => { reset(); onClose(); },
-            });
+            post(`/admin/sorteos/${sorteoId}/premios`, { onSuccess: () => { reset(); onClose(); } });
         }
     }
 
-    // Cerrar con Escape
     useEffect(() => {
         function onKey(e) { if (e.key === 'Escape') onClose(); }
         window.addEventListener('keydown', onKey);
@@ -207,12 +167,12 @@ function PremioModal({ sorteoId, premio, onClose }) {
     return (
         <div
             ref={overlayRef}
-            className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4"
+            className="fixed inset-0 z-40 flex items-center justify-center bg-bg/80 p-4"
             onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
         >
-            <div className="w-full max-w-md rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
-                <h2 className="mb-5 font-[BebasNeue,sans-serif] text-2xl tracking-wide text-white">
-                    {isEditing ? 'Editar premio' : 'Nuevo premio'}
+            <div className="w-full max-w-md border border-gold/20 bg-surface p-6 shadow-2xl">
+                <h2 className="mb-5 font-display text-2xl text-cream">
+                    {isEditing ? 'EDITAR PREMIO' : 'NUEVO PREMIO'}
                 </h2>
 
                 <form onSubmit={submit} className="space-y-4">
@@ -276,23 +236,23 @@ function PremioModal({ sorteoId, premio, onClose }) {
                             type="checkbox"
                             checked={data.visible}
                             onChange={(e) => setData('visible', e.target.checked)}
-                            className="size-4 rounded accent-pink-500"
+                            className="size-4 accent-gold"
                         />
-                        <span className="text-sm text-slate-300">Visible en la página pública</span>
+                        <span className="text-sm text-muted">Visible en la página pública</span>
                     </label>
 
                     <div className="flex justify-end gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="rounded-lg px-4 py-2 text-sm font-medium text-slate-400 ring-1 ring-slate-600 transition-colors hover:bg-slate-700 hover:text-white"
+                            className="border border-gold/30 px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-gold hover:text-cream"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="rounded-lg bg-pink-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-700 disabled:opacity-50"
+                            className="bg-gold px-5 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light disabled:opacity-50"
                         >
                             {processing ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Agregar'}
                         </button>
@@ -305,19 +265,19 @@ function PremioModal({ sorteoId, premio, onClose }) {
 
 function inputCls(error) {
     return [
-        'w-full rounded-lg border bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition-colors focus:ring-2 focus:ring-pink-500',
-        error ? 'border-red-500' : 'border-slate-600',
+        'w-full border bg-surface2 px-3 py-2.5 text-sm text-cream placeholder-muted outline-none transition-colors',
+        error ? 'border-danger' : 'border-gold/20 focus:border-gold',
     ].join(' ');
 }
 
 function Field({ label, error, children }) {
     return (
         <div className="space-y-1.5">
-            <label className="block text-xs font-medium uppercase tracking-wider text-slate-400">
+            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">
                 {label}
             </label>
             {children}
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-danger">{error}</p>}
         </div>
     );
 }

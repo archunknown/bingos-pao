@@ -1,9 +1,9 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 
 const ESTADO_BADGE = {
-    pendiente:  'bg-yellow-500/20 text-yellow-300',
-    confirmado: 'bg-green-500/20  text-green-300',
-    rechazado:  'bg-red-500/20    text-red-300',
+    pendiente:  'bg-gold/10 text-gold border-gold/30',
+    confirmado: 'bg-success/10 text-success border-success/30',
+    rechazado:  'bg-danger/10 text-danger border-danger/30',
 };
 
 export default function Dashboard({
@@ -16,86 +16,70 @@ export default function Dashboard({
     return (
         <AdminLayout>
             <div className="space-y-8">
-                <h1 className="font-[BebasNeue,sans-serif] text-3xl tracking-wide text-white">
-                    Dashboard
-                </h1>
+                <h1 className="font-display text-4xl text-cream">DASHBOARD</h1>
 
-                {/* ── Tarjetas de stats ── */}
+                {/* Stats */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatCard
-                        label="Sorteos activos"
-                        value={sorteos_activos}
-                        color="pink"
-                        icon={<IconTicket />}
-                    />
-                    <StatCard
-                        label="Participantes hoy"
-                        value={participantes_hoy}
-                        color="violet"
-                        icon={<IconUsers />}
-                    />
-                    <StatCard
-                        label="Comprobantes pendientes"
-                        value={comprobantes_pendientes}
-                        color="yellow"
-                        icon={<IconClock />}
-                    />
+                    <StatCard label="Sorteos activos"         value={sorteos_activos}    icon={<IconTicket />} accent="gold" />
+                    <StatCard label="Participantes hoy"       value={participantes_hoy}  icon={<IconUsers />}  accent="success" />
+                    <StatCard label="Comprobantes pendientes" value={comprobantes_pendientes} icon={<IconClock />} accent="gold" />
                     <StatCard
                         label="Pozo acumulado"
                         value={pozo_acumulado != null ? `S/ ${pozo_acumulado}` : '—'}
-                        color="emerald"
                         icon={<IconMoney />}
+                        accent="gold"
                     />
                 </div>
 
-                {/* ── Actividad reciente ── */}
+                {/* Actividad reciente */}
                 <section>
-                    <h2 className="mb-4 text-lg font-semibold text-slate-200">
-                        Actividad reciente
+                    <h2 className="mb-4 border-l-4 border-gold pl-3 font-display text-2xl text-gold">
+                        ACTIVIDAD RECIENTE
                     </h2>
-
-                    <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-700 text-left text-slate-400">
-                                    <th className="px-4 py-3 font-medium">Participante</th>
-                                    <th className="hidden px-4 py-3 font-medium sm:table-cell">Sorteo</th>
-                                    <th className="px-4 py-3 font-medium">Estado</th>
-                                    <th className="hidden px-4 py-3 font-medium lg:table-cell">Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-700">
-                                {actividad_reciente.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                                            Sin actividad aún
-                                        </td>
+                    <div className="overflow-hidden border border-gold/20 bg-surface">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-surface2 text-left">
+                                        <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted">Participante</th>
+                                        <th className="hidden px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted sm:table-cell">Sorteo</th>
+                                        <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted">Estado</th>
+                                        <th className="hidden px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted lg:table-cell">Fecha</th>
                                     </tr>
-                                ) : (
-                                    actividad_reciente.map((p) => (
-                                        <tr key={p.id} className="text-slate-300 transition-colors hover:bg-slate-700/50">
-                                            <td className="px-4 py-3 font-medium text-white">
-                                                {p.nombres} {p.apellidos}
-                                            </td>
-                                            <td className="hidden px-4 py-3 sm:table-cell">
-                                                {p.sorteo?.nombre ?? '—'}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${ESTADO_BADGE[p.estado] ?? ''}`}>
-                                                    {p.estado}
-                                                </span>
-                                            </td>
-                                            <td className="hidden px-4 py-3 text-slate-400 lg:table-cell">
-                                                {new Date(p.created_at).toLocaleString('es-PE', {
-                                                    dateStyle: 'short',
-                                                    timeStyle: 'short',
-                                                })}
+                                </thead>
+                                <tbody>
+                                    {actividad_reciente.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-4 py-10 text-center text-muted">
+                                                Sin actividad aún
                                             </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        actividad_reciente.map((p) => (
+                                            <tr key={p.id} className="border-b border-gold/10 transition-colors hover:bg-surface2/50">
+                                                <td className="px-4 py-3 font-medium text-cream">
+                                                    {p.nombres} {p.apellidos}
+                                                </td>
+                                                <td className="hidden px-4 py-3 text-content sm:table-cell">
+                                                    {p.sorteo?.nombre ?? '—'}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`inline-block border px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${ESTADO_BADGE[p.estado] ?? 'text-muted'}`}>
+                                                        {p.estado}
+                                                    </span>
+                                                </td>
+                                                <td className="hidden px-4 py-3 text-xs text-muted lg:table-cell">
+                                                    {new Date(p.created_at).toLocaleString('es-PE', {
+                                                        dateStyle: 'short',
+                                                        timeStyle: 'short',
+                                                    })}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -103,26 +87,19 @@ export default function Dashboard({
     );
 }
 
-function StatCard({ label, value, color, icon }) {
-    const colors = {
-        pink:    'border-pink-500/30    bg-pink-500/10    text-pink-400',
-        violet:  'border-violet-500/30  bg-violet-500/10  text-violet-400',
-        yellow:  'border-yellow-500/30  bg-yellow-500/10  text-yellow-400',
-        emerald: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-    };
-
+function StatCard({ label, value, icon, accent }) {
+    const accentCls = accent === 'success' ? 'border-l-success text-success' : 'border-l-gold text-gold';
     return (
-        <div className={`flex items-center gap-4 rounded-xl border p-5 ${colors[color]}`}>
+        <div className={`flex items-center gap-4 border border-gold/20 border-l-4 bg-surface p-5 ${accentCls}`}>
             <div className="size-10 shrink-0">{icon}</div>
             <div>
-                <p className="text-xs font-medium uppercase tracking-wider opacity-70">{label}</p>
-                <p className="mt-0.5 text-2xl font-bold text-white">{value}</p>
+                <p className="text-[10px] font-medium uppercase tracking-widest text-muted">{label}</p>
+                <p className="mt-0.5 font-display text-3xl text-cream">{value}</p>
             </div>
         </div>
     );
 }
 
-/* ── Iconos inline ── */
 function IconTicket() {
     return (
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

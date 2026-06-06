@@ -12,7 +12,6 @@ const TIPOS = [
 export default function SorteoForm({ sorteo }) {
     const { flash } = usePage().props;
     const editing = !!sorteo;
-
     const [toast, setToast] = useState(null);
 
     useEffect(() => {
@@ -23,7 +22,6 @@ export default function SorteoForm({ sorteo }) {
         return () => clearTimeout(t);
     }, [flash]);
 
-    // Inertia useForm para manejo de estado + errores + processing
     const { data, setData, post, put, processing, errors } = useForm({
         nombre:               sorteo?.nombre               ?? '',
         tipo:                 sorteo?.tipo                 ?? 'bingo',
@@ -43,39 +41,30 @@ export default function SorteoForm({ sorteo }) {
 
     return (
         <AdminLayout>
-            {/* Toast */}
             {toast && (
-                <div
-                    className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-                        toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                    }`}
-                >
+                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
+                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
+                }`}>
                     {toast.msg}
                 </div>
             )}
 
             <div className="mx-auto max-w-2xl space-y-6">
-                {/* Encabezado */}
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
                         onClick={() => router.visit('/admin/sorteos')}
-                        className="text-slate-400 hover:text-white"
+                        className="text-muted transition-colors hover:text-cream"
                         aria-label="Volver"
                     >
                         ←
                     </button>
-                    <h1 className="font-[BebasNeue,sans-serif] text-3xl tracking-wide text-white">
-                        {editing ? 'Editar sorteo' : 'Nuevo sorteo'}
+                    <h1 className="font-display text-4xl text-cream">
+                        {editing ? 'EDITAR SORTEO' : 'NUEVO SORTEO'}
                     </h1>
                 </div>
 
-                {/* Formulario */}
-                <form
-                    onSubmit={submit}
-                    className="space-y-5 rounded-xl border border-slate-700 bg-slate-800 p-6"
-                >
-                    {/* Nombre */}
+                <form onSubmit={submit} className="space-y-5 border border-gold/20 bg-surface p-6">
                     <Field label="Nombre" error={errors.nombre}>
                         <input
                             type="text"
@@ -87,7 +76,6 @@ export default function SorteoForm({ sorteo }) {
                         />
                     </Field>
 
-                    {/* Tipo */}
                     <Field label="Tipo" error={errors.tipo}>
                         <select
                             value={data.tipo}
@@ -100,7 +88,6 @@ export default function SorteoForm({ sorteo }) {
                         </select>
                     </Field>
 
-                    {/* Fecha y hora */}
                     <Field label="Fecha y hora del sorteo" error={errors.fecha_sorteo}>
                         <input
                             type="datetime-local"
@@ -110,7 +97,6 @@ export default function SorteoForm({ sorteo }) {
                         />
                     </Field>
 
-                    {/* Precio */}
                     <Field label="Precio de participación (S/)" error={errors.precio_participacion}>
                         <input
                             type="number"
@@ -123,7 +109,6 @@ export default function SorteoForm({ sorteo }) {
                         />
                     </Field>
 
-                    {/* Descripción */}
                     <Field label="Descripción (opcional)" error={errors.descripcion}>
                         <textarea
                             value={data.descripcion}
@@ -134,19 +119,18 @@ export default function SorteoForm({ sorteo }) {
                         />
                     </Field>
 
-                    {/* Acciones */}
                     <div className="flex items-center justify-end gap-3 pt-2">
                         <button
                             type="button"
                             onClick={() => router.visit('/admin/sorteos')}
-                            className="rounded-lg px-4 py-2 text-sm font-medium text-slate-400 ring-1 ring-slate-600 transition-colors hover:bg-slate-700 hover:text-white"
+                            className="border border-gold/30 px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-gold hover:text-cream"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="rounded-lg bg-pink-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-700 disabled:opacity-50"
+                            className="bg-gold px-5 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light disabled:opacity-50"
                         >
                             {processing ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear sorteo'}
                         </button>
@@ -157,7 +141,6 @@ export default function SorteoForm({ sorteo }) {
     );
 }
 
-/* Convierte ISO datetime a formato requerido por datetime-local input */
 function toLocalInput(iso) {
     const d = new Date(iso);
     const pad = (n) => String(n).padStart(2, '0');
@@ -166,19 +149,19 @@ function toLocalInput(iso) {
 
 function inputCls(error) {
     return [
-        'w-full rounded-lg border bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition-colors focus:ring-2 focus:ring-pink-500',
-        error ? 'border-red-500' : 'border-slate-600',
+        'w-full border bg-surface2 px-3 py-2.5 text-sm text-cream placeholder-muted outline-none transition-colors',
+        error ? 'border-danger' : 'border-gold/20 focus:border-gold',
     ].join(' ');
 }
 
 function Field({ label, error, children }) {
     return (
         <div className="space-y-1.5">
-            <label className="block text-xs font-medium uppercase tracking-wider text-slate-400">
+            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">
                 {label}
             </label>
             {children}
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-danger">{error}</p>}
         </div>
     );
 }

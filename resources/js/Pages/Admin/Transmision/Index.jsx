@@ -9,9 +9,9 @@ const ESTADOS_STREAM = [
 ];
 
 const ESTADO_BADGE = {
-    en_vivo:         'bg-red-500/20    text-red-300    border-red-500/30',
-    sin_transmision: 'bg-slate-500/20  text-slate-400  border-slate-500/30',
-    proximamente:    'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+    en_vivo:         'bg-danger/10 text-danger border-danger/30',
+    sin_transmision: 'bg-surface2 text-muted border-muted/20',
+    proximamente:    'bg-gold/10 text-gold border-gold/30',
 };
 
 export default function TransmisionIndex({ config }) {
@@ -43,27 +43,24 @@ export default function TransmisionIndex({ config }) {
     return (
         <AdminLayout>
             {toast && (
-                <div className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
+                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
                 }`}>
                     {toast.msg}
                 </div>
             )}
 
             <div className="mx-auto max-w-2xl space-y-6">
-                {/* Header */}
                 <div className="flex items-center gap-4">
-                    <h1 className="font-[BebasNeue,sans-serif] text-3xl tracking-wide text-white">
-                        Transmisión
-                    </h1>
+                    <h1 className="font-display text-4xl text-cream">TRANSMISIÓN</h1>
                     {estadoActual && (
-                        <span className={`rounded-full border px-3 py-0.5 text-xs font-medium ${ESTADO_BADGE[data.estado_stream] ?? ''}`}>
+                        <span className={`border px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${ESTADO_BADGE[data.estado_stream] ?? ''}`}>
                             {estadoActual.label}
                         </span>
                     )}
                 </div>
 
-                <form onSubmit={submit} className="space-y-5 rounded-xl border border-slate-700 bg-slate-800 p-6">
+                <form onSubmit={submit} className="space-y-5 border border-gold/20 bg-surface p-6">
 
                     {/* Estado del stream */}
                     <Field label="Estado de transmisión" error={errors.estado_stream}>
@@ -74,10 +71,10 @@ export default function TransmisionIndex({ config }) {
                                     type="button"
                                     onClick={() => setData('estado_stream', value)}
                                     className={[
-                                        'rounded-lg border py-2.5 text-sm font-medium transition-colors',
+                                        'border py-2.5 text-sm font-medium transition-colors',
                                         data.estado_stream === value
-                                            ? 'border-pink-500 bg-pink-600 text-white'
-                                            : 'border-slate-600 text-slate-400 hover:border-slate-400 hover:text-white',
+                                            ? 'border-gold bg-gold text-bg font-bold'
+                                            : 'border-gold/30 text-muted hover:border-gold hover:text-cream',
                                     ].join(' ')}
                                 >
                                     {label}
@@ -86,7 +83,6 @@ export default function TransmisionIndex({ config }) {
                         </div>
                     </Field>
 
-                    {/* URL en vivo */}
                     <Field label="URL transmisión en vivo" error={errors.url_stream_live}>
                         <input
                             type="url"
@@ -97,7 +93,6 @@ export default function TransmisionIndex({ config }) {
                         />
                     </Field>
 
-                    {/* URL grabada */}
                     <Field label="URL última transmisión grabada" error={errors.url_stream_grabado}>
                         <input
                             type="url"
@@ -108,7 +103,6 @@ export default function TransmisionIndex({ config }) {
                         />
                     </Field>
 
-                    {/* Mensaje destacado */}
                     <Field label="Mensaje destacado" error={errors.mensaje_destacado}>
                         <textarea
                             value={data.mensaje_destacado}
@@ -118,17 +112,16 @@ export default function TransmisionIndex({ config }) {
                             placeholder="Ej. ¡El próximo sorteo es el sábado a las 8pm! Inscríbete ahora."
                             className={inputCls(errors.mensaje_destacado) + ' resize-none'}
                         />
-                        <p className="text-right text-xs text-slate-500">
+                        <p className="text-right text-xs text-muted">
                             {data.mensaje_destacado.length}/500
                         </p>
                     </Field>
 
-                    {/* Guardar */}
                     <div className="flex justify-end pt-2">
                         <button
                             type="submit"
                             disabled={processing}
-                            className="rounded-lg bg-pink-600 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-700 disabled:opacity-50"
+                            className="bg-gold px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light disabled:opacity-50"
                         >
                             {processing ? 'Guardando…' : 'Guardar configuración'}
                         </button>
@@ -141,19 +134,19 @@ export default function TransmisionIndex({ config }) {
 
 function inputCls(error) {
     return [
-        'w-full rounded-lg border bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 outline-none transition-colors focus:ring-2 focus:ring-pink-500',
-        error ? 'border-red-500' : 'border-slate-600',
+        'w-full border bg-surface2 px-3 py-2.5 text-sm text-cream placeholder-muted outline-none transition-colors',
+        error ? 'border-danger' : 'border-gold/20 focus:border-gold',
     ].join(' ');
 }
 
 function Field({ label, error, children }) {
     return (
         <div className="space-y-1.5">
-            <label className="block text-xs font-medium uppercase tracking-wider text-slate-400">
+            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">
                 {label}
             </label>
             {children}
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-danger">{error}</p>}
         </div>
     );
 }
