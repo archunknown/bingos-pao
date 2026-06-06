@@ -60,10 +60,11 @@ class SorteoPublicoController extends Controller
         $data = $request->validate([
             'nombres'     => ['required', 'string', 'max:100'],
             'apellidos'   => ['required', 'string', 'max:100'],
-            'whatsapp'    => ['required', 'string', 'max:20'],
+            'whatsapp'    => ['required', 'string', 'regex:/^\d{9}$/'],
             'comprobante' => ['required', 'image', 'max:5120'],
             'terminos'    => ['accepted'],
         ], [
+            'whatsapp.regex'       => 'El WhatsApp debe tener exactamente 9 dígitos numéricos.',
             'terminos.accepted'    => 'Debes aceptar los términos y condiciones.',
             'comprobante.required' => 'Debes subir una foto del comprobante de pago.',
             'comprobante.image'    => 'El comprobante debe ser una imagen (JPG, PNG, etc.).',
