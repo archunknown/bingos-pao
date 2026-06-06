@@ -27,7 +27,7 @@ class HandleInertiaRequests extends Middleware
 
     private static function configPublica(): array
     {
-        $textos = ['nombre_negocio', 'alerta_seguridad_texto', 'titular_pago'];
+        $textos = ['nombre_negocio', 'titular_pago', 'whatsapp_contacto'];
 
         $config = [];
         foreach ($textos as $clave) {
