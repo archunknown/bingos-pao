@@ -21,6 +21,8 @@ class Ganador extends Model
         'created_at' => 'datetime',
     ];
 
+    protected $table = 'ganadores';
+
     public function sorteo(): BelongsTo
     {
         return $this->belongsTo(Sorteo::class);

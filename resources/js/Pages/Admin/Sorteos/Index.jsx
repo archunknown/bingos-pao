@@ -129,6 +129,15 @@ export default function SorteosIndex({ sorteos }) {
                                                         Editar
                                                     </button>
 
+                                                    {/* Premios */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => router.visit(`/admin/sorteos/${s.id}/premios`)}
+                                                        className="rounded px-2.5 py-1 text-xs font-medium text-slate-300 ring-1 ring-slate-600 transition-colors hover:bg-slate-700 hover:text-white"
+                                                    >
+                                                        Premios
+                                                    </button>
+
                                                     {/* Toggle estado */}
                                                     {TOGGLE_LABEL[s.estado] && (
                                                         <button

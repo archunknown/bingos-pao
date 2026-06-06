@@ -31,8 +31,9 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(funct
         ->shallow();
 
     // Ganadores
-    Route::resource('ganadores', GanadorController::class)
-        ->only(['index', 'store', 'update', 'destroy']);
+    Route::get('ganadores/opciones', [GanadorController::class, 'opciones'])->name('ganadores.opciones');
+    Route::resource('ganadores', GanadorController::class)->only(['index', 'store']);
+    Route::patch('ganadores/{ganador}/toggle-publicado', [GanadorController::class, 'togglePublicado'])->name('ganadores.toggle-publicado');
 
     // Configuración
     Route::get('configuracion', [ConfiguracionController::class, 'index'])->name('configuracion.index');
