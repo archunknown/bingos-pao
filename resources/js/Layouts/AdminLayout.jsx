@@ -81,11 +81,26 @@ export default function AdminLayout({ children }) {
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full',
                 ].join(' ')}
             >
-                {/* Nombre del negocio */}
-                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-gold/20 px-5">
-                    <span className="font-display text-2xl tracking-widest text-gold">
-                        {negocio}
-                    </span>
+                {/* Logo / Nombre del negocio */}
+                <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-b border-gold/20 py-5">
+                    {config_publica?.logo_url ? (
+                        <>
+                            <div className="flex size-16 items-center justify-center rounded-full border-2 border-gold/50 bg-surface2 p-1 ring-4 ring-gold/10">
+                                <img
+                                    src={config_publica.logo_url}
+                                    alt={negocio}
+                                    className="size-full rounded-full object-cover"
+                                />
+                            </div>
+                            <span className="text-center text-xs font-medium tracking-widest text-muted">
+                                {negocio}
+                            </span>
+                        </>
+                    ) : (
+                        <span className="font-display text-2xl tracking-widest text-gold">
+                            {negocio}
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto py-2">{sidebarContent}</div>
