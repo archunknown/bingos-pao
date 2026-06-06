@@ -12,8 +12,8 @@ export default function PublicLayout({ children }) {
     const { config_publica, flash, auth } = usePage().props;
     const { url } = usePage();
 
-    const [menuOpen, setMenu]   = useState(false);
-    const [toast, setToast]     = useState(null);
+    const [menuOpen, setMenu] = useState(false);
+    const [toast, setToast]   = useState(null);
 
     useEffect(() => {
         const msg = flash?.success || flash?.error;
@@ -23,7 +23,6 @@ export default function PublicLayout({ children }) {
         return () => clearTimeout(t);
     }, [flash]);
 
-    // Cierra menú al navegar
     useEffect(() => { setMenu(false); }, [url]);
 
     const nombre  = config_publica?.nombre_negocio || 'Bingos Pao';
@@ -31,67 +30,73 @@ export default function PublicLayout({ children }) {
     const alerta  = config_publica?.alerta_seguridad_texto;
     const titular = config_publica?.titular_pago;
 
-    function nav(href) {
-        router.visit(href);
-    }
-
     function isActive(href) {
         if (href === '/') return url === '/' || url === '';
         return url.startsWith(href);
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-slate-900 font-[Outfit,sans-serif] text-white">
+        <div className="flex min-h-screen flex-col bg-bg font-sans text-content">
             {/* Toast */}
             {toast && (
-                <div className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${
-                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                <div className={`fixed right-4 top-4 z-50 rounded-lg px-4 py-3 text-sm font-semibold shadow-xl ${
+                    toast.type === 'success'
+                        ? 'bg-success text-white'
+                        : 'bg-danger text-white'
                 }`}>
                     {toast.msg}
                 </div>
             )}
 
-            {/* Alerta de seguridad */}
+            {/* Banner alerta */}
             {alerta && (
-                <div className="bg-yellow-500/10 px-4 py-2 text-center text-xs font-medium text-yellow-300">
+                <div className="border-b border-danger/40 bg-danger/10 px-4 py-2 text-center text-xs font-medium text-cream">
                     ⚠ {alerta}
                 </div>
             )}
 
-            {/* Navbar sticky */}
-            <header className="sticky top-0 z-30 border-b border-slate-700/50 bg-slate-900/95 backdrop-blur">
+            {/* Navbar */}
+            <header className="sticky top-0 z-30 border-b border-gold/20 bg-bg/95 backdrop-blur">
                 <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
 
                     {/* Logo */}
-                    <button type="button" onClick={() => nav('/')} className="flex shrink-0 items-center gap-2.5">
+                    <button type="button" onClick={() => router.visit('/')} className="flex shrink-0 items-center gap-3">
                         {logoUrl ? (
-                            <img src={logoUrl} alt={nombre} className="h-9 w-9 rounded-full object-cover ring-2 ring-pink-500/40" />
+                            <img
+                                src={logoUrl}
+                                alt={nombre}
+                                className="h-9 w-9 rounded-full object-cover ring-2 ring-gold/50"
+                            />
                         ) : (
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-600 text-sm font-bold">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-sm font-bold text-bg">
                                 {nombre.charAt(0)}
                             </div>
                         )}
-                        <span className="font-[BebasNeue,sans-serif] text-xl tracking-wider text-pink-400">
+                        <span className="font-display text-xl tracking-widest text-gold">
                             {nombre}
                         </span>
                     </button>
 
                     {/* Nav desktop */}
                     <nav className="hidden items-center gap-1 md:flex">
-                        {NAV.map(({ label, href }) => (
-                            <button
-                                key={href}
-                                type="button"
-                                onClick={() => nav(href)}
-                                className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
-                                    isActive(href)
-                                        ? 'bg-slate-800 text-white'
-                                        : 'text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                {label}
-                            </button>
-                        ))}
+                        {NAV.map(({ label, href }) => {
+                            const active = isActive(href);
+                            return (
+                                <button
+                                    key={href}
+                                    type="button"
+                                    onClick={() => router.visit(href)}
+                                    className={[
+                                        'relative px-3 py-1.5 text-sm transition-colors',
+                                        active
+                                            ? 'text-gold after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-gold after:content-[""]'
+                                            : 'text-muted hover:text-cream',
+                                    ].join(' ')}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
                     </nav>
 
                     {/* Acciones desktop */}
@@ -99,46 +104,47 @@ export default function PublicLayout({ children }) {
                         {auth?.user && (
                             <button
                                 type="button"
-                                onClick={() => nav('/admin')}
-                                className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 ring-1 ring-slate-600 hover:text-white"
+                                onClick={() => router.visit('/admin')}
+                                className="rounded-lg border border-gold/30 px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-gold/60 hover:text-cream"
                             >
                                 Admin
                             </button>
                         )}
                         <button
                             type="button"
-                            onClick={() => nav('/sorteos')}
-                            className="rounded-lg bg-pink-600 px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-pink-900/40 transition-colors hover:bg-pink-700"
+                            onClick={() => router.visit('/sorteos')}
+                            className="rounded-lg bg-gold px-5 py-1.5 text-sm font-bold text-bg transition-colors hover:bg-gold-light"
                         >
                             Participar
                         </button>
                     </div>
 
-                    {/* Hamburguesa móvil */}
+                    {/* Hamburguesa */}
                     <button
                         type="button"
                         onClick={() => setMenu((o) => !o)}
-                        className="rounded-md p-2 text-slate-400 hover:text-white md:hidden"
+                        className="rounded-md p-2 text-muted hover:text-cream md:hidden"
                         aria-label="Menú"
                     >
                         {menuOpen ? <IconX /> : <IconMenu />}
                     </button>
                 </div>
 
-                {/* Menú móvil desplegable */}
+                {/* Menú móvil */}
                 {menuOpen && (
-                    <div className="border-t border-slate-700/50 bg-slate-900 px-4 pb-4 md:hidden">
+                    <div className="border-t border-gold/20 bg-surface px-4 pb-4 md:hidden">
                         <nav className="flex flex-col gap-1 pt-2">
                             {NAV.map(({ label, href }) => (
                                 <button
                                     key={href}
                                     type="button"
-                                    onClick={() => nav(href)}
-                                    className={`rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                                    onClick={() => router.visit(href)}
+                                    className={[
+                                        'rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
                                         isActive(href)
-                                            ? 'bg-slate-800 text-white'
-                                            : 'text-slate-400 hover:text-white'
-                                    }`}
+                                            ? 'bg-surface2 text-gold'
+                                            : 'text-muted hover:bg-surface2 hover:text-cream',
+                                    ].join(' ')}
                                 >
                                     {label}
                                 </button>
@@ -146,8 +152,8 @@ export default function PublicLayout({ children }) {
                         </nav>
                         <button
                             type="button"
-                            onClick={() => nav('/sorteos')}
-                            className="mt-3 w-full rounded-lg bg-pink-600 py-2.5 text-sm font-semibold text-white hover:bg-pink-700"
+                            onClick={() => router.visit('/sorteos')}
+                            className="mt-3 w-full rounded-lg bg-gold py-2.5 text-sm font-bold text-bg hover:bg-gold-light"
                         >
                             Participar ahora
                         </button>
@@ -156,25 +162,23 @@ export default function PublicLayout({ children }) {
             </header>
 
             {/* Contenido */}
-            <main className="flex-1">
-                {children}
-            </main>
+            <main className="flex-1">{children}</main>
 
             {/* Footer */}
-            <footer className="border-t border-slate-700/50 bg-slate-800/50">
+            <footer className="border-t border-gold/20 bg-surface">
                 <div className="mx-auto max-w-5xl px-4 py-8">
                     <div className="flex flex-col items-center gap-3 text-center">
-                        <span className="font-[BebasNeue,sans-serif] text-lg tracking-wider text-pink-400">
-                            {nombre}
-                        </span>
-                        <p className="text-xs text-slate-500">
+                        <span className="font-display text-lg tracking-widest text-gold">{nombre}</span>
+                        <p className="text-xs text-muted">
                             Pagos únicamente por Yape / Plin
-                            {titular && <> · Titular: <span className="text-slate-400">{titular}</span></>}
+                            {titular && (
+                                <> · Titular: <span className="text-content">{titular}</span></>
+                            )}
                         </p>
-                        <nav className="flex flex-wrap justify-center gap-4 text-xs text-slate-500">
+                        <nav className="flex flex-wrap justify-center gap-4 text-xs text-muted">
                             {NAV.map(({ label, href }) => (
-                                <button key={href} type="button" onClick={() => nav(href)}
-                                    className="hover:text-slate-300">
+                                <button key={href} type="button" onClick={() => router.visit(href)}
+                                    className="transition-colors hover:text-gold">
                                     {label}
                                 </button>
                             ))}
@@ -193,7 +197,6 @@ function IconMenu() {
         </svg>
     );
 }
-
 function IconX() {
     return (
         <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

@@ -12,9 +12,11 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout({ children }) {
-    const { auth, pendientes_count } = usePage().props;
+    const { auth, pendientes_count, config_publica } = usePage().props;
     const { url } = usePage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const negocio = config_publica?.nombre_negocio || 'Bingos Pao';
 
     function logout() {
         router.post('/logout');
@@ -26,12 +28,12 @@ export default function AdminLayout({ children }) {
     }
 
     const sidebarContent = (
-        <nav className="flex flex-col gap-1 p-4">
+        <nav className="flex flex-col gap-0.5 p-3">
             {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
                 const active = isActive(href);
-                const badge = label === 'Participantes' && pendientes_count > 0
-                    ? pendientes_count
-                    : null;
+                const badge  = label === 'Participantes' && pendientes_count > 0
+                    ? pendientes_count : null;
+
                 return (
                     <a
                         key={href}
@@ -42,16 +44,16 @@ export default function AdminLayout({ children }) {
                             router.visit(href);
                         }}
                         className={[
-                            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                            'flex items-center gap-3 rounded-r-lg border-l-[3px] px-3 py-2.5 text-sm font-medium transition-colors',
                             active
-                                ? 'bg-pink-600 text-white'
-                                : 'text-slate-300 hover:bg-slate-700 hover:text-white',
+                                ? 'border-l-gold bg-surface2 text-gold'
+                                : 'border-l-transparent text-muted hover:bg-surface2 hover:text-cream',
                         ].join(' ')}
                     >
                         <Icon className="size-5 shrink-0" />
                         <span className="flex-1">{label}</span>
                         {badge && (
-                            <span className="rounded-full bg-yellow-400 px-1.5 py-0.5 text-[10px] font-bold leading-none text-black">
+                            <span className="rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
                                 {badge}
                             </span>
                         )}
@@ -62,11 +64,11 @@ export default function AdminLayout({ children }) {
     );
 
     return (
-        <div className="flex h-screen bg-slate-900 font-[Outfit,sans-serif]">
+        <div className="flex h-screen bg-bg font-sans">
             {/* Overlay móvil */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-20 bg-black/60 lg:hidden"
+                    className="fixed inset-0 z-20 bg-black/70 lg:hidden"
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
@@ -74,55 +76,57 @@ export default function AdminLayout({ children }) {
             {/* Sidebar */}
             <aside
                 className={[
-                    'fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-slate-800 transition-transform duration-300 lg:static lg:translate-x-0',
+                    'fixed inset-y-0 left-0 z-30 flex w-64 flex-col bg-surface transition-transform duration-300 lg:static lg:translate-x-0',
+                    'border-r border-gold/20',
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full',
                 ].join(' ')}
             >
-                {/* Logo */}
-                <div className="flex h-16 shrink-0 items-center px-6">
-                    <span className="font-[BebasNeue,sans-serif] text-2xl tracking-wider text-pink-400">
-                        Bingos Pao
+                {/* Nombre del negocio */}
+                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-gold/20 px-5">
+                    <span className="font-display text-2xl tracking-widest text-gold">
+                        {negocio}
                     </span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto">{sidebarContent}</div>
+                <div className="flex-1 overflow-y-auto py-2">{sidebarContent}</div>
             </aside>
 
             {/* Área principal */}
             <div className="flex flex-1 flex-col overflow-hidden">
                 {/* Topbar */}
-                <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-700 bg-slate-800 px-4 lg:px-6">
-                    {/* Botón hamburguesa (móvil) */}
-                    <button
-                        type="button"
-                        className="rounded-md p-2 text-slate-400 hover:text-white lg:hidden"
-                        onClick={() => setSidebarOpen(true)}
-                        aria-label="Abrir menú"
-                    >
-                        <IconMenu className="size-6" />
-                    </button>
-
-                    <div className="hidden text-sm text-slate-400 lg:block">
-                        Panel de administración
+                <header className="flex h-16 shrink-0 items-center justify-between border-b border-gold/20 bg-surface px-4 lg:px-6">
+                    {/* Hamburguesa (móvil) + Nombre en desktop */}
+                    <div className="flex items-center gap-4">
+                        <button
+                            type="button"
+                            className="rounded-md p-2 text-muted hover:text-cream lg:hidden"
+                            onClick={() => setSidebarOpen(true)}
+                            aria-label="Abrir menú"
+                        >
+                            <IconMenu className="size-6" />
+                        </button>
+                        <span className="hidden font-display text-xl tracking-widest text-gold lg:block">
+                            {negocio}
+                        </span>
                     </div>
 
                     {/* Usuario + logout */}
                     <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-300">
+                        <span className="text-sm font-medium text-gold">
                             {auth?.user?.name ?? 'Admin'}
                         </span>
                         <button
                             type="button"
                             onClick={logout}
-                            className="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-pink-600 hover:text-white"
+                            className="rounded-md border border-gold/30 px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-gold/60 hover:text-cream"
                         >
-                            Cerrar sesión
+                            Salir
                         </button>
                     </div>
                 </header>
 
                 {/* Contenido */}
-                <main className="flex-1 overflow-y-auto p-4 text-white lg:p-6">
+                <main className="flex-1 overflow-y-auto bg-bg p-4 text-content lg:p-6">
                     {children}
                 </main>
             </div>
@@ -130,8 +134,7 @@ export default function AdminLayout({ children }) {
     );
 }
 
-/* ── Iconos SVG inline (sin dependencia externa) ── */
-
+/* ── Iconos SVG inline ── */
 function IconGrid({ className }) {
     return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -151,13 +154,6 @@ function IconPlus({ className }) {
     return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-    );
-}
-function IconGift({ className }) {
-    return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20 12v10H4V12m16-4H4a2 2 0 010-4h16a2 2 0 010 4zM12 8v14M8 8a2 2 0 01-2-2 2 2 0 012-2 2 2 0 012 2M16 8a2 2 0 012-2 2 2 0 012 2 2 2 0 01-2 2" />
         </svg>
     );
 }

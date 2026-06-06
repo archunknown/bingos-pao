@@ -12,8 +12,27 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                bg:       '#0D0D0D',
+                surface:  '#1A1A1A',
+                surface2: '#242424',
+                gold: {
+                    DEFAULT: '#D4AF37',
+                    dark:    '#B8960C',
+                    light:   '#F0D060',
+                },
+                danger: {
+                    DEFAULT: '#C0392B',
+                    dark:    '#962d22',
+                },
+                cream:   '#F5F0E8',
+                content: '#E0E0E0',
+                muted:   '#888888',
+                success: '#27AE60',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans:    ['Outfit', ...defaultTheme.fontFamily.sans],
+                display: ['"Bebas Neue"', 'cursive'],
             },
         },
     },
