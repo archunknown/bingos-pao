@@ -203,6 +203,21 @@ export default function PublicLayout({ children }) {
                                 </button>
                             ))}
                         </nav>
+
+                        <div className="mt-1 border-t border-gold/10 pt-4">
+                            <a
+                                href="https://www.archadrian.tech/"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="group inline-flex items-center gap-1.5 text-[11px] text-muted/50 transition-colors hover:text-muted"
+                            >
+                                <svg className="size-3 transition-colors group-hover:text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                </svg>
+                                Desarrollado por{' '}
+                                <span className="transition-colors group-hover:text-gold/80">Arch Adrian</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </footer>
@@ -255,10 +270,10 @@ function IconX() {
 }
 
 function WhatsAppBoton({ href }) {
-    const [visible, setVisible] = useState(true);
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        const t = setTimeout(() => setVisible(false), 4000);
+        const t = setTimeout(() => setVisible(false));
         return () => clearTimeout(t);
     }, []);
 

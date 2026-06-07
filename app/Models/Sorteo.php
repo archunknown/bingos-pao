@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int    $id
+ * @property string $nombre
+ * @property string $tipo
+ * @property \Illuminate\Support\Carbon $fecha_sorteo
+ * @property string $precio_participacion
+ * @property string|null $descripcion
+ * @property string $estado
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ */
 class Sorteo extends Model
 {
     protected $fillable = [

@@ -195,15 +195,20 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
 
 /* ── Stream ── */
 function StreamSection({ config }) {
-    const { estado_stream, url_stream_live, url_stream_grabado } = config;
+    const { estado_stream, url_stream_live, url_stream_grabado, nombre_negocio } = config;
     if (!estado_stream) return null;
+
+    if (estado_stream === 'proximamente') return null;
+
     const isLive = estado_stream === 'en_vivo';
-    const url = isLive ? url_stream_live : url_stream_grabado;
+    const url    = isLive ? url_stream_live : url_stream_grabado;
+
     if (!isLive && !url) return null;
 
     return (
         <section className="px-4 py-16 md:py-24">
             <div className="mx-auto max-w-3xl">
+                {/* Encabezado */}
                 <div className="mb-5 flex items-center gap-3">
                     {isLive && (
                         <span className="animate-pulse bg-danger px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
@@ -215,35 +220,144 @@ function StreamSection({ config }) {
                     </h2>
                 </div>
 
-                <div
-                    className="relative aspect-video w-full overflow-hidden border border-gold/30 bg-surface2"
-                    style={{ boxShadow: '0 0 48px rgba(212,175,55,0.07), 0 0 0 1px rgba(212,175,55,0.04)' }}
+                {/* Card principal */}
+                <motion.a
+                    href={url || '#'}
+                    target={url ? '_blank' : undefined}
+                    rel="noreferrer"
+                    className="group relative block w-full overflow-hidden border border-gold/20"
+                    style={{ aspectRatio: '16/9' }}
+                    whileHover={url ? { scale: 1.01 } : {}}
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 >
-                    {url ? (
-                        <a
-                            href={url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-muted transition-colors hover:text-gold"
-                        >
-                            <svg className="size-16 text-gold" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                            <span className="text-xs uppercase tracking-widest">
-                                {isLive ? 'Ver transmisión en vivo →' : 'Ver última transmisión →'}
+                    {/* Fondo degradado */}
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            background: isLive
+                                ? 'linear-gradient(135deg, #1a0a0a 0%, #0d0d0d 40%, #1a1205 100%)'
+                                : 'linear-gradient(135deg, #0d0d0d 0%, #111111 50%, #0d0f1a 100%)',
+                        }}
+                    />
+
+                    {/* Ondas de señal (decorativas, esquina superior derecha) */}
+                    <div className="absolute right-6 top-6 opacity-20">
+                        <SignalWaves active={isLive} />
+                    </div>
+
+                    {/* Partícula de luz ambiental */}
+                    <div
+                        className="absolute rounded-full blur-3xl"
+                        style={{
+                            width: '45%',
+                            height: '70%',
+                            top: '15%',
+                            left: '28%',
+                            background: isLive
+                                ? 'radial-gradient(ellipse, rgba(220,38,38,0.12) 0%, transparent 70%)'
+                                : 'radial-gradient(ellipse, rgba(212,175,55,0.08) 0%, transparent 70%)',
+                        }}
+                    />
+
+                    {/* Logo Facebook — esquina superior izquierda */}
+                    <div className="absolute left-5 top-5 flex items-center gap-2">
+                        <IconFacebook className="size-5 text-[#1877F2]" />
+                        <span className="text-xs font-semibold tracking-wide text-white/60">Facebook</span>
+                    </div>
+
+                    {/* Badge EN VIVO / GRABADO — esquina superior derecha */}
+                    <div className="absolute right-5 top-5">
+                        {isLive ? (
+                            <span className="flex items-center gap-1.5 bg-danger px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                                <span className="inline-block size-1.5 animate-ping rounded-full bg-white" />
+                                En vivo
                             </span>
-                        </a>
-                    ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <svg className="size-14 text-gold/20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                            <p className="text-xs uppercase tracking-widest text-muted">Sin transmisión activa</p>
+                        ) : (
+                            <span className="border border-white/20 bg-black/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/60">
+                                Grabación
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Centro — botón play + texto */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
+                        {/* Play button */}
+                        <div className="relative">
+                            {/* Halo exterior animado */}
+                            {isLive && (
+                                <div className="absolute inset-0 animate-ping rounded-full bg-danger/20" />
+                            )}
+                            <div
+                                className={[
+                                    'flex size-16 md:size-20 items-center justify-center rounded-full transition-transform duration-200',
+                                    'group-hover:scale-110',
+                                    isLive
+                                        ? 'bg-danger shadow-[0_0_32px_rgba(220,38,38,0.5)]'
+                                        : 'bg-white/10 shadow-[0_0_32px_rgba(255,255,255,0.08)] group-hover:bg-white/20',
+                                ].join(' ')}
+                            >
+                                <svg
+                                    className="ml-1 size-7 md:size-9 text-white"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
                         </div>
-                    )}
-                </div>
+
+                        {/* Texto inferior al play */}
+                        <div className="text-center">
+                            <p className="font-display text-xl tracking-widest text-white md:text-2xl">
+                                {isLive ? 'VER EN VIVO' : 'VER TRANSMISIÓN'}
+                            </p>
+                            {nombre_negocio && (
+                                <p className="mt-1 text-xs tracking-widest text-white/40">
+                                    {nombre_negocio}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Barra inferior — footer del card */}
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-white/10 bg-black/30 px-5 py-2.5 backdrop-blur-sm">
+                        <span className="text-[10px] uppercase tracking-widest text-white/40">
+                            {isLive ? 'Toca para unirte al sorteo en vivo' : 'Revive el último sorteo'}
+                        </span>
+                        <span className="text-[10px] text-white/30">facebook.com</span>
+                    </div>
+                </motion.a>
+
+                {/* Nota debajo */}
+                {!url && (
+                    <p className="mt-3 text-center text-xs text-muted">
+                        La transmisión estará disponible cuando el sorteo comience.
+                    </p>
+                )}
             </div>
         </section>
+    );
+}
+
+/* Ondas de señal WiFi/Live */
+function SignalWaves({ active }) {
+    const color = active ? '#ef4444' : '#D4AF37';
+    return (
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <path d="M18 28 a2 2 0 1 1 0.001 0Z" fill={color} />
+            <path d="M12 22 a8 8 0 0 1 12 0" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M7 17 a14 14 0 0 1 22 0" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+            <path d="M2 12 a20 20 0 0 1 32 0" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+        </svg>
+    );
+}
+
+/* Logo Facebook */
+function IconFacebook({ className }) {
+    return (
+        <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.791-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+        </svg>
     );
 }
 

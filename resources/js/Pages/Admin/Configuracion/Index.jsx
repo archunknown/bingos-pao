@@ -8,6 +8,7 @@ export default function ConfiguracionIndex({ config }) {
     const [saving, setSaving] = useState(false);
     const formRef  = useRef(null);
     const [errors, setErrors] = useState({});
+    const [whatsapp, setWhatsapp] = useState(config.whatsapp_contacto ?? '');
 
     useEffect(() => {
         const msg = flash?.success || flash?.error;
@@ -58,8 +59,16 @@ export default function ConfiguracionIndex({ config }) {
                                 maxLength={200} className={inputCls} />
                         </Field>
                         <Field label="WhatsApp de contacto">
-                            <input type="text" name="whatsapp_contacto" defaultValue={config.whatsapp_contacto}
-                                maxLength={20} placeholder="+51 999 999 999" className={inputCls} />
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                name="whatsapp_contacto"
+                                value={whatsapp}
+                                onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                                maxLength={9}
+                                placeholder="999999999"
+                                className={inputCls}
+                            />
                         </Field>
                     </Section>
 

@@ -52,7 +52,7 @@ class ConfiguracionController extends Controller
         $request->validate([
             'nombre_negocio'        => ['nullable', 'string', 'max:200'],
             'titular_pago'          => ['nullable', 'string', 'max:200'],
-            'whatsapp_contacto'     => ['nullable', 'string', 'max:20'],
+            'whatsapp_contacto'     => ['nullable', 'string', 'max:9', 'regex:/^\d*$/'],
             'url_facebook'          => ['nullable', 'url', 'max:500'],
             'url_instagram'         => ['nullable', 'url', 'max:500'],
             'url_tiktok'            => ['nullable', 'url', 'max:500'],
