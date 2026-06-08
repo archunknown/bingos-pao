@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 const NAV = [
@@ -12,6 +12,15 @@ const NAV = [
 const navUnderline = {
     rest:  { scaleX: 0 },
     hover: { scaleX: 1, transition: { duration: 0.2, ease: 'easeOut' } },
+};
+
+const mobileMenu = {
+    hidden:  { opacity: 0, y: -6, transition: { duration: 0.15, ease: 'easeIn' } },
+    visible: { opacity: 1, y: 0,  transition: { duration: 0.2, ease: 'easeOut', staggerChildren: 0.06 } },
+};
+const mobileItem = {
+    hidden:  { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.2, ease: 'easeOut' } },
 };
 
 export default function PublicLayout({ children }) {
@@ -148,34 +157,45 @@ export default function PublicLayout({ children }) {
                 </div>
 
                 {/* Menú móvil */}
-                {menuOpen && (
-                    <div className="border-t border-gold/20 bg-surface px-4 pb-4 md:hidden">
-                        <nav className="flex flex-col gap-1 pt-2">
-                            {NAV.map(({ label, href }) => (
-                                <button
-                                    key={href}
-                                    type="button"
-                                    onClick={() => router.visit(href)}
-                                    className={[
-                                        'rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
-                                        isActive(href)
-                                            ? 'bg-surface2 text-gold'
-                                            : 'text-muted hover:bg-surface2 hover:text-cream',
-                                    ].join(' ')}
-                                >
-                                    {label}
-                                </button>
-                            ))}
-                        </nav>
-                        <button
-                            type="button"
-                            onClick={() => router.visit('/sorteos')}
-                            className="mt-3 w-full rounded-lg bg-gold py-2.5 text-sm font-bold text-bg hover:bg-gold-light"
+                <AnimatePresence>
+                    {menuOpen && (
+                        <motion.div
+                            key="mobile-menu"
+                            variants={mobileMenu}
+                            initial="hidden"
+                            animate="visible"
+                            exit="hidden"
+                            className="border-t border-gold/20 bg-surface px-4 pb-4 md:hidden"
                         >
-                            Participar ahora
-                        </button>
-                    </div>
-                )}
+                            <nav className="flex flex-col gap-1 pt-2">
+                                {NAV.map(({ label, href }) => (
+                                    <motion.button
+                                        key={href}
+                                        variants={mobileItem}
+                                        type="button"
+                                        onClick={() => router.visit(href)}
+                                        className={[
+                                            'rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
+                                            isActive(href)
+                                                ? 'bg-surface2 text-gold'
+                                                : 'text-muted hover:bg-surface2 hover:text-cream',
+                                        ].join(' ')}
+                                    >
+                                        {label}
+                                    </motion.button>
+                                ))}
+                            </nav>
+                            <motion.button
+                                variants={mobileItem}
+                                type="button"
+                                onClick={() => router.visit('/sorteos')}
+                                className="mt-3 w-full rounded-lg bg-gold py-2.5 text-sm font-bold text-bg hover:bg-gold-light"
+                            >
+                                Participar ahora
+                            </motion.button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </motion.header>
 
             {/* Contenido */}
@@ -236,7 +256,7 @@ function AlertaCarrusel() {
 
     return (
         <div className="overflow-hidden border-b border-danger/30 bg-danger/10 py-2">
-            <div className="flex whitespace-nowrap" style={{ animation: 'ticker-scroll 40s linear infinite' }}>
+            <div className="ticker-scroll flex whitespace-nowrap">
                 {items.map((text, i) => (
                     <span key={i} className="shrink-0 text-xs font-medium text-cream">
                         <span className="px-12">{text}</span>
@@ -244,12 +264,6 @@ function AlertaCarrusel() {
                     </span>
                 ))}
             </div>
-            <style>{`
-                @keyframes ticker-scroll {
-                    0%   { transform: translateX(0); }
-                    100% { transform: translateX(-10%); }
-                }
-            `}</style>
         </div>
     );
 }
