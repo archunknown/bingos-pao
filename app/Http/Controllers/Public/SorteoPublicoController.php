@@ -57,6 +57,13 @@ class SorteoPublicoController extends Controller
     {
         abort_if($sorteo->estado !== 'activo', 403);
 
+        // Honeypot: si el campo "website" viene relleno es un bot.
+        // Respuesta falsa de éxito para no revelar que fue detectado.
+        if ($request->filled('website')) {
+            return redirect()->route('sorteos.show', $sorteo)
+                ->with('success', '¡Registro recibido! Tu participación está pendiente de confirmación. Te avisaremos por WhatsApp.');
+        }
+
         $data = $request->validate([
             'nombres'     => ['required', 'string', 'max:100'],
             'apellidos'   => ['required', 'string', 'max:100'],
@@ -70,6 +77,18 @@ class SorteoPublicoController extends Controller
             'comprobante.image'    => 'El comprobante debe ser una imagen (JPG, PNG, etc.).',
             'comprobante.max'      => 'La imagen no puede pesar más de 5 MB.',
         ]);
+
+        // Evitar duplicados: mismo WhatsApp activo en el mismo sorteo.
+        $duplicado = $sorteo->participantes()
+            ->where('whatsapp', $data['whatsapp'])
+            ->whereIn('estado', ['pendiente', 'confirmado'])
+            ->exists();
+
+        if ($duplicado) {
+            return back()->withErrors([
+                'whatsapp' => 'Este número ya tiene un registro activo para este sorteo.',
+            ])->withInput();
+        }
 
         $path = $request->file('comprobante')->store('comprobantes', 'public');
 

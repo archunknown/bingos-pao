@@ -1,3 +1,4 @@
+import bannerWebp from '@/assets/banner.webp';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { router } from '@inertiajs/react';
 import { motion } from 'framer-motion';
@@ -7,16 +8,14 @@ const TIPO_LABEL = {
     bingo: 'BINGO', pozito: 'POZITO', especial: 'ESPECIAL', aniversario: 'ANIVERSARIO',
 };
 
-/* ── Variants compartidos ── */
 const heroContainer = {
-    hidden:   {},
-    visible:  { transition: { staggerChildren: 0.15 } },
+    hidden:  {},
+    visible: { transition: { staggerChildren: 0.15 } },
 };
 const heroItem = {
-    hidden:   { opacity: 0, y: 30 },
-    visible:  { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+    hidden:  { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
-
 const cardContainer = {
     hidden:  {},
     visible: { transition: { staggerChildren: 0.1 } },
@@ -25,7 +24,6 @@ const cardItem = {
     hidden:  { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 };
-
 const chipContainer = {
     hidden:  {},
     visible: { transition: { staggerChildren: 0.06 } },
@@ -69,7 +67,23 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
 
     return (
         <section className="relative overflow-hidden bg-bg px-4 py-16 text-center md:py-24">
-            {/* Fondo con puntos — escala pulsante sutil */}
+            {/* Banner de fondo desenfocado */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                    backgroundImage: `url(${bannerWebp})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'blur(6px)',
+                    transform: 'scale(1.05)',
+                }}
+            />
+            {/* Overlay oscuro para contraste del contenido */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{ background: 'rgba(10,10,10,0.75)' }}
+            />
+            {/* Fondo con puntos pulsantes */}
             <motion.div
                 className="pointer-events-none absolute inset-0"
                 animate={{ scale: [1, 1.02, 1] }}
@@ -79,35 +93,35 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
                     backgroundSize: '28px 28px',
                 }}
             />
-
             {/* Glow radial */}
             <div
                 className="pointer-events-none absolute inset-0"
                 style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 35%, rgba(212,175,55,0.10), transparent 70%)' }}
             />
 
-            {/* Contenido con stagger */}
             <motion.div
                 className="relative mx-auto max-w-4xl"
                 variants={heroContainer}
                 initial="hidden"
                 animate="visible"
             >
-                <motion.p
-                    variants={heroItem}
-                    className="mb-4 text-[10px] font-medium uppercase tracking-[0.3em] text-muted"
-                >
+                <motion.p variants={heroItem} className="mb-4 text-[10px] font-medium uppercase tracking-[0.3em] text-muted">
                     Sorteos en vivo · Facebook Live
                 </motion.p>
 
                 <motion.h1 variants={heroItem} className="font-display leading-none">
                     <span className="block text-7xl text-cream md:text-9xl">GANA</span>
+                    {/* Gradiente en texto outline */}
                     <span
                         className="block text-7xl md:text-9xl"
                         style={{
-                            WebkitTextStroke: '2px #D4AF37',
+                            background: 'linear-gradient(135deg, #B8960C 0%, #D4AF37 40%, #F0D060 70%, #D4AF37 100%)',
+                            WebkitBackgroundClip: 'text',
+                            backgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             color: 'transparent',
+                            WebkitTextStroke: '1px transparent',
+                            filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.25))',
                         }}
                     >
                         PREMIOS
@@ -119,12 +133,19 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
                     comprobante y espera el resultado en directo.
                 </motion.p>
 
-                {/* Countdown */}
+                {/* Countdown con flip */}
                 {countdown && !countdown.expired && (
                     <motion.div variants={heroItem} className="mt-10">
                         <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-muted">
                             Próximo sorteo en
                         </p>
+                        <style>{`
+                            @keyframes flip-in {
+                                0%   { transform: rotateX(90deg); opacity: 0; }
+                                100% { transform: rotateX(0deg);  opacity: 1; }
+                            }
+                            .flip-digit { animation: flip-in 0.3s ease-out; }
+                        `}</style>
                         <div className="inline-flex items-center gap-1.5 md:gap-3">
                             {[
                                 { v: countdown.days,    l: 'días' },
@@ -133,13 +154,15 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
                                 { v: countdown.seconds, l: 'seg' },
                             ].map(({ v, l }, i) => (
                                 <div key={l} className="flex items-center gap-1.5 md:gap-3">
-                                    <div className="flex flex-col items-center border border-gold/30 bg-surface2 px-3 py-2.5 md:px-5 md:py-4">
-                                        <span className="font-display text-5xl leading-none text-gold md:text-6xl">
+                                    <div className="flex flex-col items-center border border-gold/30 bg-surface2 px-3 py-2.5 md:px-5 md:py-4" style={{ perspective: '400px' }}>
+                                        <span
+                                            key={v}
+                                            className="flip-digit font-display text-5xl leading-none text-gold md:text-6xl"
+                                            style={{ display: 'inline-block', transformOrigin: 'center' }}
+                                        >
                                             {String(v).padStart(2, '0')}
                                         </span>
-                                        <span className="mt-1.5 text-[9px] uppercase tracking-widest text-muted">
-                                            {l}
-                                        </span>
+                                        <span className="mt-1.5 text-[9px] uppercase tracking-widest text-muted">{l}</span>
                                     </div>
                                     {i < 3 && (
                                         <span className="font-display text-3xl text-gold/50 md:text-4xl">:</span>
@@ -156,13 +179,13 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
                     </motion.p>
                 )}
 
-                {/* CTA */}
+                {/* CTAs diferenciados */}
                 <motion.div variants={heroItem} className="mt-10 flex flex-wrap justify-center gap-4">
                     {hay_sorteos ? (
                         <button
                             type="button"
                             onClick={() => document.getElementById('sorteos')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="bg-gold px-8 py-4 text-sm font-bold uppercase tracking-widest text-bg transition-colors hover:bg-gold-light"
+                            className="bg-danger px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-danger-dark"
                         >
                             Participar ahora
                         </button>
@@ -176,7 +199,7 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
                             href={config.url_stream_live}
                             target="_blank"
                             rel="noreferrer"
-                            className="border border-gold/50 bg-transparent px-8 py-4 text-sm font-bold uppercase tracking-widest text-gold transition-colors hover:bg-gold/10"
+                            className="border border-gold/50 px-8 py-4 text-sm font-bold uppercase tracking-widest text-gold transition-colors hover:bg-gold/10"
                         >
                             Ver en vivo
                         </a>
@@ -193,22 +216,49 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
     );
 }
 
+/* ── Aurora orb reutilizable ── */
+function AuroraOrb({ color, width, height, top, left, right, bottom, keyframes, duration = 14, delay = 0 }) {
+    return (
+        <motion.div
+            className="pointer-events-none absolute rounded-full"
+            animate={keyframes}
+            transition={{ duration, repeat: Infinity, ease: 'easeInOut', delay }}
+            style={{
+                width, height, top, left, right, bottom,
+                background: `radial-gradient(ellipse, ${color} 0%, transparent 70%)`,
+                filter: 'blur(60px)',
+            }}
+        />
+    );
+}
+
 /* ── Stream ── */
 function StreamSection({ config }) {
     const { estado_stream, url_stream_live, url_stream_grabado, nombre_negocio } = config;
-    if (!estado_stream) return null;
-
-    if (estado_stream === 'proximamente') return null;
+    if (!estado_stream || estado_stream === 'proximamente') return null;
 
     const isLive = estado_stream === 'en_vivo';
     const url    = isLive ? url_stream_live : url_stream_grabado;
-
     if (!isLive && !url) return null;
 
     return (
-        <section className="px-4 py-16 md:py-24">
-            <div className="mx-auto max-w-3xl">
-                {/* Encabezado */}
+        <section className="relative overflow-hidden px-4 py-16 md:py-24">
+            <AuroraOrb
+                color={isLive ? 'rgba(220,38,38,0.13)' : 'rgba(212,175,55,0.10)'}
+                width="55%" height="90%"
+                top="-20%" right="-10%"
+                keyframes={{ x: [0, 25, -10, 0], y: [0, -35, 18, 0], scale: [1, 1.07, 0.95, 1] }}
+                duration={16}
+            />
+            <AuroraOrb
+                color="rgba(212,175,55,0.07)"
+                width="45%" height="80%"
+                bottom="-25%" left="-8%"
+                keyframes={{ x: [0, -18, 22, 0], y: [0, 28, -12, 0], scale: [1, 0.94, 1.05, 1] }}
+                duration={13}
+                delay={-6}
+            />
+            <div className="relative mx-auto max-w-3xl">
                 <div className="mb-5 flex items-center gap-3">
                     {isLive && (
                         <span className="animate-pulse bg-danger px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
@@ -220,12 +270,14 @@ function StreamSection({ config }) {
                     </h2>
                 </div>
 
-                {/* Card principal */}
                 <motion.a
                     href={url || '#'}
                     target={url ? '_blank' : undefined}
                     rel="noreferrer"
-                    className="group relative block w-full overflow-hidden border border-gold/20"
+                    className={[
+                        'group relative block w-full overflow-hidden',
+                        isLive ? 'border-2 border-danger/60 animate-pulse' : 'border border-gold/20',
+                    ].join(' ')}
                     style={{ aspectRatio: '16/9' }}
                     whileHover={url ? { scale: 1.01 } : {}}
                     transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -240,33 +292,39 @@ function StreamSection({ config }) {
                         }}
                     />
 
-                    {/* Ondas de señal (decorativas, esquina superior derecha) */}
-                    <div className="absolute right-6 top-6 opacity-20">
+                    {/* Scanlines TV (opacidad 0.03) */}
+                    <div
+                        className="pointer-events-none absolute inset-0"
+                        style={{
+                            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)',
+                            zIndex: 1,
+                        }}
+                    />
+
+                    {/* Ondas de señal */}
+                    <div className="absolute right-6 top-6 z-10 opacity-20">
                         <SignalWaves active={isLive} />
                     </div>
 
-                    {/* Partícula de luz ambiental */}
+                    {/* Luz ambiental */}
                     <div
                         className="absolute rounded-full blur-3xl"
                         style={{
-                            width: '45%',
-                            height: '70%',
-                            top: '15%',
-                            left: '28%',
+                            width: '45%', height: '70%', top: '15%', left: '28%',
                             background: isLive
                                 ? 'radial-gradient(ellipse, rgba(220,38,38,0.12) 0%, transparent 70%)'
                                 : 'radial-gradient(ellipse, rgba(212,175,55,0.08) 0%, transparent 70%)',
                         }}
                     />
 
-                    {/* Logo Facebook — esquina superior izquierda */}
-                    <div className="absolute left-5 top-5 flex items-center gap-2">
+                    {/* Logo Facebook */}
+                    <div className="absolute left-5 top-5 z-10 flex items-center gap-2">
                         <IconFacebook className="size-5 text-[#1877F2]" />
                         <span className="text-xs font-semibold tracking-wide text-white/60">Facebook</span>
                     </div>
 
-                    {/* Badge EN VIVO / GRABADO — esquina superior derecha */}
-                    <div className="absolute right-5 top-5">
+                    {/* Badge */}
+                    <div className="absolute right-5 top-5 z-10">
                         {isLive ? (
                             <span className="flex items-center gap-1.5 bg-danger px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
                                 <span className="inline-block size-1.5 animate-ping rounded-full bg-white" />
@@ -279,48 +337,33 @@ function StreamSection({ config }) {
                         )}
                     </div>
 
-                    {/* Centro — botón play + texto */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-5">
-                        {/* Play button */}
+                    {/* Play + texto */}
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5">
                         <div className="relative">
-                            {/* Halo exterior animado */}
-                            {isLive && (
-                                <div className="absolute inset-0 animate-ping rounded-full bg-danger/20" />
-                            )}
-                            <div
-                                className={[
-                                    'flex size-16 md:size-20 items-center justify-center rounded-full transition-transform duration-200',
-                                    'group-hover:scale-110',
-                                    isLive
-                                        ? 'bg-danger shadow-[0_0_32px_rgba(220,38,38,0.5)]'
-                                        : 'bg-white/10 shadow-[0_0_32px_rgba(255,255,255,0.08)] group-hover:bg-white/20',
-                                ].join(' ')}
-                            >
-                                <svg
-                                    className="ml-1 size-7 md:size-9 text-white"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
+                            {isLive && <div className="absolute inset-0 animate-ping rounded-full bg-danger/20" />}
+                            <div className={[
+                                'flex size-16 items-center justify-center rounded-full transition-transform duration-200 md:size-20 group-hover:scale-110',
+                                isLive
+                                    ? 'bg-danger shadow-[0_0_32px_rgba(220,38,38,0.5)]'
+                                    : 'bg-white/10 shadow-[0_0_32px_rgba(255,255,255,0.08)] group-hover:bg-white/20',
+                            ].join(' ')}>
+                                <svg className="ml-1 size-7 text-white md:size-9" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z" />
                                 </svg>
                             </div>
                         </div>
-
-                        {/* Texto inferior al play */}
                         <div className="text-center">
                             <p className="font-display text-xl tracking-widest text-white md:text-2xl">
                                 {isLive ? 'VER EN VIVO' : 'VER TRANSMISIÓN'}
                             </p>
                             {nombre_negocio && (
-                                <p className="mt-1 text-xs tracking-widest text-white/40">
-                                    {nombre_negocio}
-                                </p>
+                                <p className="mt-1 text-xs tracking-widest text-white/40">{nombre_negocio}</p>
                             )}
                         </div>
                     </div>
 
-                    {/* Barra inferior — footer del card */}
-                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-white/10 bg-black/30 px-5 py-2.5 backdrop-blur-sm">
+                    {/* Footer del card */}
+                    <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-between border-t border-white/10 bg-black/30 px-5 py-2.5 backdrop-blur-sm">
                         <span className="text-[10px] uppercase tracking-widest text-white/40">
                             {isLive ? 'Toca para unirte al sorteo en vivo' : 'Revive el último sorteo'}
                         </span>
@@ -328,7 +371,6 @@ function StreamSection({ config }) {
                     </div>
                 </motion.a>
 
-                {/* Nota debajo */}
                 {!url && (
                     <p className="mt-3 text-center text-xs text-muted">
                         La transmisión estará disponible cuando el sorteo comience.
@@ -339,7 +381,6 @@ function StreamSection({ config }) {
     );
 }
 
-/* Ondas de señal WiFi/Live */
 function SignalWaves({ active }) {
     const color = active ? '#ef4444' : '#D4AF37';
     return (
@@ -352,7 +393,6 @@ function SignalWaves({ active }) {
     );
 }
 
-/* Logo Facebook */
 function IconFacebook({ className }) {
     return (
         <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -364,8 +404,23 @@ function IconFacebook({ className }) {
 /* ── Sorteos activos ── */
 function SorteosSection({ sorteos, id }) {
     return (
-        <section id={id} className="px-4 py-16 md:py-24">
-            <div className="mx-auto max-w-5xl">
+        <section id={id} className="relative overflow-hidden px-4 py-16 md:py-24">
+            <AuroraOrb
+                color="rgba(212,175,55,0.11)"
+                width="50%" height="100%"
+                top="-30%" left="-8%"
+                keyframes={{ x: [0, 18, -12, 0], y: [0, -20, 30, 0], scale: [1, 1.06, 0.96, 1] }}
+                duration={18}
+            />
+            <AuroraOrb
+                color="rgba(184,150,12,0.08)"
+                width="40%" height="80%"
+                bottom="-20%" right="-5%"
+                keyframes={{ x: [0, -22, 14, 0], y: [0, 32, -18, 0], scale: [1, 0.93, 1.04, 1] }}
+                duration={14}
+                delay={-7}
+            />
+            <div className="relative mx-auto max-w-5xl">
                 <h2 className="mb-10 border-l-4 border-gold pl-5 font-display text-5xl text-cream">
                     SORTEOS ACTIVOS
                 </h2>
@@ -377,12 +432,7 @@ function SorteosSection({ sorteos, id }) {
                     viewport={{ once: true }}
                 >
                     {sorteos.map((s) => (
-                        <motion.div
-                            key={s.id}
-                            variants={cardItem}
-                            whileHover={{ scale: 1.01 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                        >
+                        <motion.div key={s.id} variants={cardItem} whileHover={{ scale: 1.01 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
                             <SorteoCard sorteo={s} />
                         </motion.div>
                     ))}
@@ -393,6 +443,12 @@ function SorteosSection({ sorteos, id }) {
 }
 
 function SorteoCard({ sorteo }) {
+    const diasRestantes = Math.max(0, Math.ceil(
+        (new Date(sorteo.fecha_sorteo) - Date.now()) / 86_400_000
+    ));
+    const barPct = Math.min(100, Math.round((diasRestantes / 30) * 100));
+    const barColor = diasRestantes <= 3 ? 'bg-danger' : diasRestantes <= 7 ? 'bg-gold' : 'bg-success';
+
     return (
         <div className="flex h-full flex-col border border-gold/20 bg-surface transition-colors hover:border-gold/60">
             <div className="flex items-center justify-between gap-2 border-b border-gold/10 bg-surface2 px-4 py-3">
@@ -405,11 +461,25 @@ function SorteoCard({ sorteo }) {
             </div>
             <div className="flex flex-1 flex-col p-4">
                 <h3 className="mb-1 text-sm font-semibold text-cream">{sorteo.nombre}</h3>
-                <p className="mb-4 text-xs text-muted">
-                    {new Date(sorteo.fecha_sorteo).toLocaleString('es-PE', {
-                        dateStyle: 'long', timeStyle: 'short',
-                    })}
-                </p>
+
+                {/* Fecha + barra de días restantes */}
+                <div className="mb-4">
+                    <p className="text-xs text-muted">
+                        {new Date(sorteo.fecha_sorteo).toLocaleString('es-PE', { dateStyle: 'long', timeStyle: 'short' })}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                        <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface2">
+                            <div
+                                className={`h-full rounded-full transition-all ${barColor}`}
+                                style={{ width: `${barPct}%` }}
+                            />
+                        </div>
+                        <span className={`text-[10px] font-bold ${diasRestantes <= 3 ? 'text-danger' : 'text-muted'}`}>
+                            {diasRestantes === 0 ? '¡Hoy!' : `${diasRestantes}d`}
+                        </span>
+                    </div>
+                </div>
+
                 {sorteo.premios?.length > 0 && (
                     <ul className="mb-5 flex-1 space-y-2">
                         {sorteo.premios.slice(0, 4).map((p) => (
@@ -428,23 +498,86 @@ function SorteoCard({ sorteo }) {
                         )}
                     </ul>
                 )}
-                <button
-                    type="button"
+
+                <RippleButton
                     onClick={() => router.visit(`/sorteos/${sorteo.id}`)}
                     className="mt-auto w-full bg-danger py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-danger-dark"
                 >
                     Participar
-                </button>
+                </RippleButton>
             </div>
         </div>
     );
 }
 
+/* Botón con efecto ripple */
+function RippleButton({ onClick, className, children }) {
+    const [ripples, setRipples] = useState([]);
+
+    function handleClick(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const id = Date.now();
+        setRipples((prev) => [...prev, { id, x, y }]);
+        setTimeout(() => setRipples((prev) => prev.filter((r) => r.id !== id)), 600);
+        onClick?.();
+    }
+
+    return (
+        <button type="button" onClick={handleClick} className={`relative overflow-hidden ${className}`}>
+            {children}
+            {ripples.map(({ id, x, y }) => (
+                <span
+                    key={id}
+                    className="pointer-events-none absolute rounded-full bg-white/30"
+                    style={{
+                        left: x - 40, top: y - 40,
+                        width: 80, height: 80,
+                        animation: 'ripple-expand 0.6s ease-out forwards',
+                    }}
+                />
+            ))}
+            <style>{`
+                @keyframes ripple-expand {
+                    0%   { transform: scale(0); opacity: 0.5; }
+                    100% { transform: scale(4); opacity: 0; }
+                }
+            `}</style>
+        </button>
+    );
+}
+
 /* ── Ganadores recientes ── */
+const AVATAR_COLORS = [
+    'bg-gold/20 text-gold',
+    'bg-danger/20 text-danger',
+    'bg-success/20 text-success',
+    'bg-cream/10 text-cream',
+];
+
 function GanadoresSection({ ganadores }) {
     return (
-        <section className="px-4 py-16 md:py-24">
-            <div className="mx-auto max-w-5xl">
+        <section className="relative overflow-hidden px-4 py-16 md:py-24">
+            <AuroraOrb
+                color="rgba(212,175,55,0.09)"
+                width="60%" height="90%"
+                top="-20%" right="-15%"
+                keyframes={{ x: [0, 20, -12, 0], y: [0, -25, 14, 0], scale: [1, 1.05, 0.96, 1] }}
+                duration={17}
+            />
+            <AuroraOrb
+                color="rgba(39,174,96,0.07)"
+                width="45%" height="75%"
+                bottom="-20%" left="-10%"
+                keyframes={{ x: [0, -14, 18, 0], y: [0, 22, -10, 0], scale: [1, 0.94, 1.06, 1] }}
+                duration={12}
+                delay={-5}
+            />
+            {/* Confetti animado */}
+            <AnimatedConfetti />
+
+            <div className="relative mx-auto max-w-5xl">
                 <h2 className="mb-8 border-l-4 border-gold pl-5 font-display text-5xl text-cream">
                     GANADORES RECIENTES
                 </h2>
@@ -455,30 +588,66 @@ function GanadoresSection({ ganadores }) {
                     whileInView="visible"
                     viewport={{ once: true }}
                 >
-                    {ganadores.map((g) => (
-                        <motion.div
-                            key={g.id}
-                            variants={chipItem}
-                            className="border border-gold/30 bg-surface px-4 py-3"
-                        >
-                            <p className="text-sm font-semibold text-cream">
-                                {g.participante?.nombres} {g.participante?.apellidos}
-                            </p>
-                            <p className="text-xs font-bold text-gold">{g.premio?.nombre}</p>
-                            <p className="text-[11px] text-muted">{g.sorteo?.nombre}</p>
-                        </motion.div>
-                    ))}
+                    {ganadores.map((g, i) => {
+                        const nombre   = `${g.participante?.nombres ?? ''} ${g.participante?.apellidos ?? ''}`.trim();
+                        const inicial  = nombre.charAt(0).toUpperCase();
+                        const avatarCls = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                        return (
+                            <motion.div
+                                key={g.id}
+                                variants={chipItem}
+                                className="flex items-center gap-3 border border-gold/30 bg-surface px-4 py-3"
+                            >
+                                <div className={`flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatarCls}`}>
+                                    {inicial}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-cream">{nombre}</p>
+                                    <p className="text-xs font-bold text-gold">{g.premio?.nombre}</p>
+                                    <p className="text-[11px] text-muted">{g.sorteo?.nombre}</p>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </motion.div>
             </div>
         </section>
     );
 }
 
-/* ── Banner de seguridad ── */
+/* Confetti animado flotante */
+function AnimatedConfetti() {
+    const particles = [
+        { x: '5%',  startY: '110%', color: '#D4AF37', r: 3,   dur: 7,  delay: 0    },
+        { x: '12%', startY: '110%', color: '#C0392B', r: 2,   dur: 9,  delay: -3   },
+        { x: '88%', startY: '110%', color: '#D4AF37', r: 4,   dur: 8,  delay: -1   },
+        { x: '92%', startY: '110%', color: '#27AE60', r: 2.5, dur: 11, delay: -5   },
+        { x: '78%', startY: '110%', color: '#D4AF37', r: 3,   dur: 6,  delay: -2   },
+        { x: '20%', startY: '110%', color: '#C0392B', r: 2,   dur: 10, delay: -7   },
+        { x: '65%', startY: '110%', color: '#27AE60', r: 3.5, dur: 8,  delay: -4   },
+        { x: '45%', startY: '110%', color: '#D4AF37', r: 2,   dur: 12, delay: -6   },
+        { x: '33%', startY: '110%', color: '#B8960C', r: 3,   dur: 9,  delay: -1.5 },
+        { x: '72%', startY: '110%', color: '#C0392B', r: 2.5, dur: 7,  delay: -8   },
+    ];
+    return (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+            {particles.map(({ x, color, r, dur, delay }, i) => (
+                <motion.div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{ left: x, bottom: 0, width: r * 2, height: r * 2, backgroundColor: color }}
+                    animate={{ y: [0, -700], opacity: [0, 0.55, 0.4, 0] }}
+                    transition={{ duration: dur, repeat: Infinity, ease: 'linear', delay }}
+                />
+            ))}
+        </div>
+    );
+}
+
+/* ── Banner seguridad ── */
 function SeguridadBanner({ config }) {
     const { titular_pago: titular } = config;
     if (!titular) return null;
-
     return (
         <section className="px-4 py-16 md:py-24">
             <div className="mx-auto max-w-3xl border-l-4 border-danger bg-danger/10 p-6">
@@ -486,12 +655,10 @@ function SeguridadBanner({ config }) {
                     <span className="shrink-0 text-xl text-danger">⚠</span>
                     <div>
                         <p className="font-display text-2xl tracking-widest text-danger">AVISO DE SEGURIDAD</p>
-                        {titular && (
-                            <p className="mt-3 text-xs text-muted">
-                                Titular verificado:{' '}
-                                <span className="font-semibold text-cream">{titular}</span>
-                            </p>
-                        )}
+                        <p className="mt-3 text-xs text-muted">
+                            Titular verificado:{' '}
+                            <span className="font-semibold text-cream">{titular}</span>
+                        </p>
                     </div>
                 </div>
             </div>

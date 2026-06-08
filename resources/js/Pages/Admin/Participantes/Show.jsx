@@ -1,26 +1,25 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 const ESTADO_BADGE = {
-    pendiente:  'bg-gold/10 text-gold border-gold/30',
-    confirmado: 'bg-success/10 text-success border-success/30',
-    rechazado:  'bg-danger/10 text-danger border-danger/30',
+    pendiente:  'bg-gold/10 text-gold border border-gold/30',
+    confirmado: 'bg-success/10 text-success border border-success/30',
+    rechazado:  'bg-danger/10 text-danger border border-danger/30',
 };
 
 export default function ParticipanteShow({ participante, comprobante_url }) {
-    const { flash } = usePage().props;
-    const [toast, setToast]             = useState(null);
     const [rechazarOpen, setRechazar]   = useState(false);
     const [confirmarOpen, setConfirmar] = useState(false);
+    const [lightboxOpen, setLightbox]   = useState(false);
 
     useEffect(() => {
-        const msg = flash?.success || flash?.error;
-        if (!msg) return;
-        setToast({ msg, type: flash.success ? 'success' : 'error' });
-        const t = setTimeout(() => setToast(null), 4000);
-        return () => clearTimeout(t);
-    }, [flash]);
+        function onKey(e) {
+            if (e.key === 'Escape') { setLightbox(false); setConfirmar(false); }
+        }
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
     function confirmar() {
         router.patch(`/admin/participantes/${participante.id}/confirmar`);
@@ -30,24 +29,18 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
 
     return (
         <AdminLayout>
-            {toast && (
-                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
-                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
-                }`}>
-                    {toast.msg}
-                </div>
-            )}
-
             <div className="mx-auto max-w-3xl space-y-6">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
                         onClick={() => router.visit('/admin/participantes')}
-                        className="text-muted transition-colors hover:text-cream"
+                        className="flex items-center gap-1 text-muted transition-colors hover:text-cream"
                         aria-label="Volver"
                     >
-                        ←
+                        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
                     </button>
                     <div>
                         <h1 className="font-display text-4xl text-cream">
@@ -60,14 +53,16 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                 <div className="grid gap-6 lg:grid-cols-2">
                     {/* Datos */}
                     <div className="space-y-4 border border-gold/20 bg-surface p-5">
-                        <h2 className="border-l-4 border-gold pl-3 font-display text-2xl text-gold">
-                            DATOS
-                        </h2>
+                        <h2 className="border-l-4 border-gold pl-3 font-display text-2xl text-gold">DATOS</h2>
 
-                        <dl className="space-y-3 text-sm">
+                        <dl className="divide-y divide-gold/10 text-sm">
                             <DataRow label="N° registro" value={participante.numero_registro ?? '—'} mono />
                             <DataRow label="Estado">
-                                <span className={`inline-block border px-3 py-0.5 text-xs font-bold uppercase tracking-wider ${ESTADO_BADGE[participante.estado] ?? ''}`}>
+                                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${ESTADO_BADGE[participante.estado] ?? ''}`}>
+                                    <span className={`size-1.5 rounded-full ${
+                                        participante.estado === 'confirmado' ? 'bg-success' :
+                                        participante.estado === 'rechazado'  ? 'bg-danger'  : 'bg-gold'
+                                    }`} />
                                     {participante.estado}
                                 </span>
                             </DataRow>
@@ -85,22 +80,28 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
                             )}
                         </dl>
 
-                        {/* Acciones */}
-                        {esPendiente && (
+                        {/* Acciones CONFIRMAR / RECHAZAR */}
+                        {esPendiente && !rechazarOpen && (
                             <div className="flex gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setConfirmar(true)}
-                                    className="flex-1 bg-success py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
+                                    className="flex flex-1 flex-col items-center gap-1.5 bg-success py-3 text-white transition-opacity hover:opacity-90"
                                 >
-                                    CONFIRMAR
+                                    <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-xs font-bold uppercase tracking-wider">Confirmar</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setRechazar(true)}
-                                    className="flex-1 border border-danger/30 bg-danger/10 py-2.5 text-sm font-bold uppercase tracking-wider text-danger transition-colors hover:bg-danger hover:text-white"
+                                    className="flex flex-1 flex-col items-center gap-1.5 border border-danger/30 bg-danger/10 py-3 text-danger transition-colors hover:bg-danger hover:text-white"
                                 >
-                                    RECHAZAR
+                                    <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-xs font-bold uppercase tracking-wider">Rechazar</span>
                                 </button>
                             </div>
                         )}
@@ -115,31 +116,68 @@ export default function ParticipanteShow({ participante, comprobante_url }) {
 
                     {/* Comprobante */}
                     <div className="space-y-3 border border-gold/20 bg-surface p-5">
-                        <h2 className="border-l-4 border-gold pl-3 font-display text-2xl text-gold">
-                            COMPROBANTE
-                        </h2>
+                        <h2 className="border-l-4 border-gold pl-3 font-display text-2xl text-gold">COMPROBANTE</h2>
 
                         {comprobante_url ? (
-                            <a href={comprobante_url} target="_blank" rel="noreferrer">
-                                <img
-                                    src={comprobante_url}
-                                    alt="Comprobante de pago"
-                                    className="w-full border border-gold/20 object-contain transition-opacity hover:opacity-90"
-                                    style={{ maxHeight: '480px' }}
-                                />
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => setLightbox(true)}
+                                    className="group relative block w-full overflow-hidden border border-gold/20 transition-opacity hover:opacity-90"
+                                >
+                                    <img
+                                        src={comprobante_url}
+                                        alt="Comprobante de pago"
+                                        className="w-full object-contain"
+                                        style={{ maxHeight: '420px' }}
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
+                                        <span className="scale-0 rounded-full bg-black/60 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform group-hover:scale-100">
+                                            Ver en pantalla completa
+                                        </span>
+                                    </div>
+                                </button>
                                 <p className="mt-2 text-center text-xs text-muted">
-                                    Clic para abrir en pantalla completa
+                                    Clic para ampliar · <kbd className="rounded bg-surface2 px-1.5 py-0.5 font-mono text-[10px]">Esc</kbd> para cerrar
                                 </p>
-                            </a>
+                            </div>
                         ) : (
-                            <div className="flex h-40 items-center justify-center border-2 border-dashed border-gold/20 text-muted">
-                                Sin comprobante
+                            <div className="flex h-40 flex-col items-center justify-center gap-2 border-2 border-dashed border-gold/20 text-muted">
+                                <svg className="size-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-sm">Sin comprobante</span>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
+            {/* Lightbox */}
+            {lightboxOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+                    onClick={() => setLightbox(false)}
+                >
+                    <button
+                        type="button"
+                        onClick={() => setLightbox(false)}
+                        className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-surface text-muted transition-colors hover:text-cream"
+                    >
+                        <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <img
+                        src={comprobante_url}
+                        alt="Comprobante de pago"
+                        className="max-h-full max-w-full object-contain shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
+
+            {/* Modal confirmar */}
             {confirmarOpen && (
                 <ConfirmarModal
                     participante={participante}
@@ -159,26 +197,26 @@ function ConfirmarModal({ participante, onConfirm, onCancel }) {
     }, [onCancel]);
 
     return (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-bg/80 p-4">
-            <div className="w-full max-w-sm border border-gold/20 bg-surface p-6 shadow-2xl">
+        <div
+            className="fixed inset-0 z-40 flex items-center justify-center bg-bg/80 p-4 backdrop-blur-sm"
+            onClick={onCancel}
+        >
+            <div
+                className="w-full max-w-sm border border-gold/20 bg-surface p-6 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="mb-5 flex items-center gap-3">
-                    <span className="flex size-10 items-center justify-center rounded-full bg-success/10 text-xl text-success">✓</span>
+                    <span className="flex size-10 items-center justify-center rounded-full bg-success/10 text-success">
+                        <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </span>
                     <h2 className="font-display text-2xl text-cream">CONFIRMAR PAGO</h2>
                 </div>
-
-                <p className="mb-1 text-sm text-muted">
-                    Estás por confirmar la participación de:
-                </p>
-                <p className="mb-1 font-semibold text-cream">
-                    {participante.nombres} {participante.apellidos}
-                </p>
-                <p className="mb-5 text-sm text-muted">
-                    Sorteo: <span className="text-content">{participante.sorteo?.nombre}</span>
-                </p>
-                <p className="mb-6 text-xs text-muted">
-                    Se le asignará un número de registro y quedará habilitado para participar.
-                </p>
-
+                <p className="mb-1 text-sm text-muted">Estás por confirmar la participación de:</p>
+                <p className="mb-1 font-semibold text-cream">{participante.nombres} {participante.apellidos}</p>
+                <p className="mb-5 text-sm text-muted">Sorteo: <span className="text-content">{participante.sorteo?.nombre}</span></p>
+                <p className="mb-6 text-xs text-muted">Se le asignará un número de registro y quedará habilitado para participar.</p>
                 <div className="flex gap-3">
                     <button
                         type="button"
@@ -190,7 +228,7 @@ function ConfirmarModal({ participante, onConfirm, onCancel }) {
                     <button
                         type="button"
                         onClick={onConfirm}
-                        className="flex-1 bg-success py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
+                        className="flex-1 bg-success py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
                     >
                         Sí, confirmar
                     </button>
@@ -222,9 +260,7 @@ function RechazarForm({ participanteId, onCancel }) {
                 ].join(' ')}
                 autoFocus
             />
-            {errors.nota_interna && (
-                <p className="text-xs text-danger">{errors.nota_interna}</p>
-            )}
+            {errors.nota_interna && <p className="text-xs text-danger">{errors.nota_interna}</p>}
             <div className="flex gap-2">
                 <button
                     type="button"
@@ -247,9 +283,9 @@ function RechazarForm({ participanteId, onCancel }) {
 
 function DataRow({ label, value, mono, children }) {
     return (
-        <div className="flex justify-between gap-4">
-            <dt className="shrink-0 text-muted">{label}</dt>
-            <dd className={`text-right text-cream ${mono ? 'font-mono' : ''}`}>
+        <div className="flex items-baseline justify-between gap-4 py-2.5">
+            <dt className="shrink-0 text-xs uppercase tracking-wider text-muted">{label}</dt>
+            <dd className={`text-right text-sm text-cream ${mono ? 'font-mono' : ''}`}>
                 {children ?? value}
             </dd>
         </div>
