@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { router, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
+import { useCallback, useState } from 'react';
 
 const TIPOS = [
     { value: 'bingo',       label: 'Bingo' },
@@ -9,18 +9,10 @@ const TIPOS = [
     { value: 'aniversario', label: 'Aniversario' },
 ];
 
-export default function SorteoForm({ sorteo }) {
-    const { flash } = usePage().props;
-    const editing = !!sorteo;
-    const [toast, setToast] = useState(null);
+const REQUIRED_FIELDS = ['nombre', 'tipo', 'fecha_sorteo', 'precio_participacion', 'descripcion'];
 
-    useEffect(() => {
-        const msg = flash?.success || flash?.error;
-        if (!msg) return;
-        setToast({ msg, type: flash.success ? 'success' : 'error' });
-        const t = setTimeout(() => setToast(null), 4000);
-        return () => clearTimeout(t);
-    }, [flash]);
+export default function SorteoForm({ sorteo }) {
+    const editing = !!sorteo;
 
     const { data, setData, post, put, processing, errors } = useForm({
         nombre:               sorteo?.nombre               ?? '',
@@ -30,38 +22,52 @@ export default function SorteoForm({ sorteo }) {
         descripcion:          sorteo?.descripcion          ?? '',
     });
 
+    const completedCount = REQUIRED_FIELDS.filter((f) => String(data[f]).trim() !== '').length;
+    const progressPct    = Math.round((completedCount / REQUIRED_FIELDS.length) * 100);
+
     function submit(e) {
         e.preventDefault();
-        if (editing) {
-            put(`/admin/sorteos/${sorteo.id}`);
-        } else {
-            post('/admin/sorteos');
-        }
+        if (editing) put(`/admin/sorteos/${sorteo.id}`);
+        else         post('/admin/sorteos');
     }
+
+    const autoResize = useCallback((e) => {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+    }, []);
 
     return (
         <AdminLayout>
-            {toast && (
-                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
-                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
-                }`}>
-                    {toast.msg}
-                </div>
-            )}
-
             <div className="mx-auto max-w-2xl space-y-6">
+                {/* Header */}
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
                         onClick={() => router.visit('/admin/sorteos')}
-                        className="text-muted transition-colors hover:text-cream"
+                        className="flex items-center gap-1 text-muted transition-colors hover:text-cream"
                         aria-label="Volver"
                     >
-                        ←
+                        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
                     </button>
                     <h1 className="font-display text-4xl text-cream">
                         {editing ? 'EDITAR SORTEO' : 'NUEVO SORTEO'}
                     </h1>
+                </div>
+
+                {/* Barra de progreso */}
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase tracking-widest text-muted">Campos completados</span>
+                        <span className="text-[10px] font-bold text-gold">{completedCount}/{REQUIRED_FIELDS.length}</span>
+                    </div>
+                    <div className="h-1 w-full overflow-hidden rounded-full bg-surface2">
+                        <div
+                            className="h-full rounded-full bg-gold transition-all duration-300"
+                            style={{ width: `${progressPct}%` }}
+                        />
+                    </div>
                 </div>
 
                 <form onSubmit={submit} className="space-y-5 border border-gold/20 bg-surface p-6">
@@ -112,9 +118,10 @@ export default function SorteoForm({ sorteo }) {
                         <textarea
                             value={data.descripcion}
                             onChange={(e) => setData('descripcion', e.target.value)}
-                            rows={4}
+                            onInput={autoResize}
+                            rows={3}
                             placeholder="Detalles del sorteo, premios, instrucciones…"
-                            className={inputCls(errors.descripcion) + ' resize-none'}
+                            className={inputCls(errors.descripcion) + ' resize-none overflow-hidden'}
                         />
                     </Field>
 
@@ -168,7 +175,6 @@ function DateTimePicker({ value, onChange, error }) {
     }
 
     const init = parseParts(value);
-    // Local state — intermediate selections survive re-renders without onChange being called
     const [year,   setYear]   = useState(init.year);
     const [month,  setMonth]  = useState(init.month);
     const [day,    setDay]    = useState(init.day);
@@ -176,12 +182,9 @@ function DateTimePicker({ value, onChange, error }) {
     const [minute, setMinute] = useState(init.minute);
 
     function emit(y, mo, d, h, mi) {
-        if (y && mo && d) {
-            onChange(`${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}`);
-        }
+        if (y && mo && d) onChange(`${y}-${pad(mo)}-${pad(d)}T${pad(h)}:${pad(mi)}`);
     }
 
-    // Mañana como fecha mínima
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
@@ -191,28 +194,38 @@ function DateTimePicker({ value, onChange, error }) {
 
     const selYear  = parseInt(year)  || 0;
     const selMonth = parseInt(month) || 0;
+    const daysInMonth = selYear && selMonth ? new Date(selYear, selMonth, 0).getDate() : 31;
 
-    const daysInMonth = selYear && selMonth
-        ? new Date(selYear, selMonth, 0).getDate()
-        : 31;
+    const selectCls = [
+        'w-full border bg-surface2 px-3 py-2.5 text-sm text-cream outline-none transition-colors',
+        error ? 'border-danger' : 'border-gold/20 focus:border-gold',
+    ].join(' ');
 
-    const selectCls = error
-        ? 'w-full border border-danger bg-surface2 px-3 py-2.5 text-sm text-cream outline-none transition-colors'
-        : 'w-full border border-gold/20 bg-surface2 px-3 py-2.5 text-sm text-cream outline-none transition-colors focus:border-gold';
+    const hasDate = year && month && day;
+    const dateLabel = hasDate
+        ? `${parseInt(day)} de ${MESES[parseInt(month) - 1]} de ${year}, ${HORAS_DISPLAY.find((h) => h.value === hour)?.label}`
+        : null;
 
     return (
         <div className="space-y-3">
-            {/* Año / Mes / Día */}
+            {/* Resumen prominente */}
+            <div className={[
+                'flex items-center gap-2 rounded border px-3 py-2.5 text-sm transition-colors',
+                hasDate ? 'border-gold/30 bg-gold/5 text-gold' : 'border-gold/10 bg-surface2 text-muted/50',
+            ].join(' ')}>
+                <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+                <span className="font-medium">{dateLabel ?? 'Selecciona fecha y hora'}</span>
+            </div>
+
+            {/* Fila 1: Año / Mes / Día */}
             <div className="grid grid-cols-3 gap-2">
                 <div>
                     <p className="mb-1 text-[9px] uppercase tracking-widest text-muted">Año</p>
                     <select
                         value={year}
-                        onChange={(e) => {
-                            setYear(e.target.value);
-                            setMonth('');
-                            setDay('');
-                        }}
+                        onChange={(e) => { setYear(e.target.value); setMonth(''); setDay(''); }}
                         className={selectCls}
                     >
                         <option value="">—</option>
@@ -221,66 +234,46 @@ function DateTimePicker({ value, onChange, error }) {
                         ))}
                     </select>
                 </div>
-
                 <div>
                     <p className="mb-1 text-[9px] uppercase tracking-widest text-muted">Mes</p>
                     <select
                         value={month}
                         disabled={!year}
-                        onChange={(e) => {
-                            setMonth(e.target.value);
-                            setDay('');
-                        }}
+                        onChange={(e) => { setMonth(e.target.value); setDay(''); }}
                         className={selectCls + ' disabled:opacity-40'}
                     >
                         <option value="">—</option>
                         {MESES.map((nombre, i) => {
                             const mNum = i + 1;
                             const disabled = selYear === minYear && mNum < minMonth;
-                            return (
-                                <option key={mNum} value={pad(mNum)} disabled={disabled}>
-                                    {nombre}
-                                </option>
-                            );
+                            return <option key={mNum} value={pad(mNum)} disabled={disabled}>{nombre}</option>;
                         })}
                     </select>
                 </div>
-
                 <div>
                     <p className="mb-1 text-[9px] uppercase tracking-widest text-muted">Día</p>
                     <select
                         value={day}
                         disabled={!year || !month}
-                        onChange={(e) => {
-                            setDay(e.target.value);
-                            emit(year, month, e.target.value, hour, minute);
-                        }}
+                        onChange={(e) => { setDay(e.target.value); emit(year, month, e.target.value, hour, minute); }}
                         className={selectCls + ' disabled:opacity-40'}
                     >
                         <option value="">—</option>
                         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
                             const beforeMin = selYear === minYear && selMonth === minMonth && d < minDay;
-                            return (
-                                <option key={d} value={pad(d)} disabled={beforeMin}>
-                                    {d}
-                                </option>
-                            );
+                            return <option key={d} value={pad(d)} disabled={beforeMin}>{d}</option>;
                         })}
                     </select>
                 </div>
             </div>
 
-            {/* Hora / Minutos */}
+            {/* Fila 2: Hora / Minutos */}
             <div className="grid grid-cols-2 gap-2">
                 <div>
                     <p className="mb-1 text-[9px] uppercase tracking-widest text-muted">Hora</p>
                     <select
                         value={hour}
-                        onChange={(e) => {
-                            const h = parseInt(e.target.value);
-                            setHour(h);
-                            emit(year, month, day, h, minute);
-                        }}
+                        onChange={(e) => { const h = parseInt(e.target.value); setHour(h); emit(year, month, day, h, minute); }}
                         className={selectCls}
                     >
                         {HORAS_DISPLAY.map(({ value: v, label: l }) => (
@@ -292,11 +285,7 @@ function DateTimePicker({ value, onChange, error }) {
                     <p className="mb-1 text-[9px] uppercase tracking-widest text-muted">Minutos</p>
                     <select
                         value={minute}
-                        onChange={(e) => {
-                            const mi = parseInt(e.target.value);
-                            setMinute(mi);
-                            emit(year, month, day, hour, mi);
-                        }}
+                        onChange={(e) => { const mi = parseInt(e.target.value); setMinute(mi); emit(year, month, day, hour, mi); }}
                         className={selectCls}
                     >
                         {MINUTOS_DISPLAY.map(({ value: v, label: l }) => (
@@ -305,16 +294,6 @@ function DateTimePicker({ value, onChange, error }) {
                     </select>
                 </div>
             </div>
-
-            {year && month && day && (
-                <p className="text-xs text-muted">
-                    Seleccionado:{' '}
-                    <span className="font-medium text-gold">
-                        {parseInt(day)} de {MESES[parseInt(month) - 1]} de {year},{' '}
-                        {HORAS_DISPLAY.find((h) => h.value === hour)?.label}
-                    </span>
-                </p>
-            )}
         </div>
     );
 }

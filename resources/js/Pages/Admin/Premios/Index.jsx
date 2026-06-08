@@ -15,25 +15,15 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 export default function PremiosIndex({ sorteo, premios: premiosIniciales }) {
-    const { flash } = usePage().props;
-    const [toast, setToast]     = useState(null);
     const [modalOpen, setModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [premios, setPremios] = useState(premiosIniciales);
 
     useEffect(() => { setPremios(premiosIniciales); }, [premiosIniciales]);
-
-    useEffect(() => {
-        const msg = flash?.success || flash?.error;
-        if (!msg) return;
-        setToast({ msg, type: flash.success ? 'success' : 'error' });
-        const t = setTimeout(() => setToast(null), 4000);
-        return () => clearTimeout(t);
-    }, [flash]);
 
     function openCreate() { setEditing(null); setModal(true); }
     function openEdit(p)  { setEditing(p);    setModal(true); }
@@ -56,12 +46,10 @@ export default function PremiosIndex({ sorteo, premios: premiosIniciales }) {
     function handleDragEnd(event) {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
-
         const oldIndex = premios.findIndex((p) => p.id === active.id);
         const newIndex = premios.findIndex((p) => p.id === over.id);
         const nuevaLista = arrayMove(premios, oldIndex, newIndex);
         setPremios(nuevaLista);
-
         router.post(
             `/admin/sorteos/${sorteo.id}/premios/reordenar`,
             { orden: nuevaLista.map((p) => p.id) },
@@ -71,23 +59,18 @@ export default function PremiosIndex({ sorteo, premios: premiosIniciales }) {
 
     return (
         <AdminLayout>
-            {toast && (
-                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
-                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
-                }`}>
-                    {toast.msg}
-                </div>
-            )}
-
             <div className="space-y-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <button
                             type="button"
                             onClick={() => router.visit('/admin/sorteos')}
-                            className="mb-1 text-sm text-muted transition-colors hover:text-cream"
+                            className="mb-1 flex items-center gap-1 text-sm text-muted transition-colors hover:text-cream"
                         >
-                            ← Sorteos
+                            <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Sorteos
                         </button>
                         <h1 className="font-display text-4xl text-cream">PREMIOS</h1>
                         <p className="mt-0.5 text-sm text-muted">{sorteo.nombre}</p>
@@ -95,19 +78,31 @@ export default function PremiosIndex({ sorteo, premios: premiosIniciales }) {
                     <button
                         type="button"
                         onClick={openCreate}
-                        className="bg-gold px-4 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light"
+                        className="flex items-center gap-2 bg-gold px-4 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light"
                     >
-                        + Agregar premio
+                        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Agregar premio
                     </button>
                 </div>
 
                 {premios.length === 0 ? (
-                    <div className="border border-gold/10 bg-surface px-6 py-12 text-center text-muted">
-                        No hay premios aún. Agrega el primero.
+                    <div className="flex flex-col items-center gap-3 border border-gold/10 bg-surface px-6 py-16 text-center text-muted">
+                        <svg className="size-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 21h8m-4-4v4m-5-8H5a2 2 0 01-2-2V7h18v4a2 2 0 01-2 2h-2m-8 0h8m-8 0a5 5 0 0010 0" />
+                        </svg>
+                        <p className="text-sm font-medium">No hay premios aún</p>
+                        <p className="text-xs text-muted/60">Agrega el primero con el botón de arriba</p>
                     </div>
                 ) : (
                     <>
-                        <p className="text-xs text-muted">Arrastra para reordenar</p>
+                        <p className="flex items-center gap-1.5 text-xs text-muted">
+                            <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                            Arrastra el handle para reordenar
+                        </p>
                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                             <SortableContext items={premios.map((p) => p.id)} strategy={verticalListSortingStrategy}>
                                 <div className="space-y-2">
@@ -141,26 +136,37 @@ function SortablePremioCard({ premio, posicion, onEdit, onDelete, onToggleVisibl
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
-        zIndex:  isDragging ? 10 : 'auto',
+        zIndex: isDragging ? 10 : 'auto',
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="flex items-center gap-4 border border-gold/20 bg-surface px-4 py-3 transition-colors hover:border-gold/40">
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={[
+                'flex items-center gap-3 border border-gold/20 bg-surface px-3 py-3 transition-all duration-150',
+                isDragging
+                    ? 'shadow-2xl shadow-black/50 border-gold/50 opacity-90'
+                    : 'hover:border-gold/40',
+            ].join(' ')}
+        >
+            {/* Handle más grande y visible */}
             <button
                 type="button"
                 {...attributes}
                 {...listeners}
-                className="shrink-0 cursor-grab touch-none text-gold/40 hover:text-gold active:cursor-grabbing"
+                className="flex shrink-0 cursor-grab touch-none items-center justify-center rounded p-2 text-gold/30 transition-colors hover:bg-gold/10 hover:text-gold/70 active:cursor-grabbing"
                 title="Arrastrar para reordenar"
             >
                 <IconGrip />
             </button>
-            <span className="w-6 shrink-0 text-center text-xs text-muted">{posicion}</span>
+
+            <span className="w-5 shrink-0 text-center text-xs text-muted/40">{posicion}</span>
+
             <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-cream">{premio.nombre}</p>
                 <p className="text-xs text-muted">
-                    Cantidad: {premio.cantidad}
+                    ×{premio.cantidad}
                     {premio.monto != null
                         ? ` · S/ ${Number(premio.monto).toFixed(2)}`
                         : premio.descripcion_premio
@@ -168,30 +174,37 @@ function SortablePremioCard({ premio, posicion, onEdit, onDelete, onToggleVisibl
                         : ''}
                 </p>
             </div>
+
+            {/* Toggle visible */}
             <button
                 type="button"
                 onClick={onToggleVisible}
-                title={premio.visible ? 'Ocultar' : 'Mostrar'}
-                className={`shrink-0 border px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                    premio.visible
-                        ? 'border-success/30 bg-success/10 text-success hover:bg-success/20'
-                        : 'border-muted/20 bg-surface2 text-muted hover:text-cream'
-                }`}
+                title={premio.visible ? 'Ocultar del público' : 'Mostrar al público'}
+                className="flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors duration-150"
+                style={premio.visible
+                    ? { borderColor: 'rgba(39,174,96,0.35)', color: '#27AE60', background: 'rgba(39,174,96,0.08)' }
+                    : { borderColor: 'rgba(136,136,136,0.2)', color: '#888', background: 'rgba(36,36,36,0.8)' }
+                }
             >
+                <span className={[
+                    'size-2 rounded-full transition-colors',
+                    premio.visible ? 'bg-success' : 'bg-muted/40',
+                ].join(' ')} />
                 {premio.visible ? 'Visible' : 'Oculto'}
             </button>
+
             <div className="flex shrink-0 gap-2">
                 <button
                     type="button"
                     onClick={onEdit}
-                    className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:border-gold hover:text-cream"
+                    className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors duration-150 hover:border-gold hover:text-cream"
                 >
                     Editar
                 </button>
                 <button
                     type="button"
                     onClick={onDelete}
-                    className="border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger transition-colors hover:bg-danger hover:text-white"
+                    className="border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger transition-colors duration-150 hover:bg-danger hover:text-white"
                 >
                     Eliminar
                 </button>
@@ -215,11 +228,8 @@ function PremioModal({ sorteoId, premio, onClose }) {
 
     function submit(e) {
         e.preventDefault();
-        if (isEditing) {
-            put(`/admin/premios/${premio.id}`, { onSuccess: () => { reset(); onClose(); } });
-        } else {
-            post(`/admin/sorteos/${sorteoId}/premios`, { onSuccess: () => { reset(); onClose(); } });
-        }
+        if (isEditing) put(`/admin/premios/${premio.id}`, { onSuccess: () => { reset(); onClose(); } });
+        else           post(`/admin/sorteos/${sorteoId}/premios`, { onSuccess: () => { reset(); onClose(); } });
     }
 
     useEffect(() => {
@@ -231,7 +241,7 @@ function PremioModal({ sorteoId, premio, onClose }) {
     return (
         <div
             ref={overlayRef}
-            className="fixed inset-0 z-40 flex items-center justify-center bg-bg/80 p-4"
+            className="fixed inset-0 z-40 flex items-center justify-center bg-bg/80 p-4 backdrop-blur-sm"
             onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
         >
             <div className="w-full max-w-md border border-gold/20 bg-surface p-6 shadow-2xl">
@@ -318,10 +328,10 @@ function PremioModal({ sorteoId, premio, onClose }) {
 
 function IconGrip() {
     return (
-        <svg className="size-4" fill="currentColor" viewBox="0 0 16 16">
-            <circle cx="5" cy="4" r="1.2" /><circle cx="11" cy="4" r="1.2" />
-            <circle cx="5" cy="8" r="1.2" /><circle cx="11" cy="8" r="1.2" />
-            <circle cx="5" cy="12" r="1.2" /><circle cx="11" cy="12" r="1.2" />
+        <svg className="size-5" fill="currentColor" viewBox="0 0 16 16">
+            <circle cx="5" cy="4"  r="1.3" /><circle cx="11" cy="4"  r="1.3" />
+            <circle cx="5" cy="8"  r="1.3" /><circle cx="11" cy="8"  r="1.3" />
+            <circle cx="5" cy="12" r="1.3" /><circle cx="11" cy="12" r="1.3" />
         </svg>
     );
 }
@@ -336,9 +346,7 @@ function inputCls(error) {
 function Field({ label, error, children }) {
     return (
         <div className="space-y-1.5">
-            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">
-                {label}
-            </label>
+            <label className="block text-[10px] font-medium uppercase tracking-widest text-muted">{label}</label>
             {children}
             {error && <p className="text-xs text-danger">{error}</p>}
         </div>

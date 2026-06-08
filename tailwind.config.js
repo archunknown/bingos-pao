@@ -29,10 +29,25 @@ export default {
                 content: '#E0E0E0',
                 muted:   '#888888',
                 success: '#27AE60',
+                'border-default': 'rgba(212,175,55,0.2)',
             },
             fontFamily: {
                 sans:    ['Outfit', ...defaultTheme.fontFamily.sans],
                 display: ['"Bebas Neue"', 'cursive'],
+            },
+            borderRadius: {
+                none: '0px',
+                sm:   '2px',
+                md:   '4px',
+            },
+            boxShadow: {
+                'glow-gold':   '0 0 20px rgba(212,175,55,0.15)',
+                'glow-danger': '0 0 20px rgba(192,57,43,0.20)',
+            },
+            transitionDuration: {
+                150: '150ms',
+                200: '200ms',
+                300: '300ms',
             },
         },
     },

@@ -1,18 +1,16 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { router, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
 
 const TIPO_LABEL = {
     bingo: 'Bingo', pozito: 'Pozito', especial: 'Especial', aniversario: 'Aniversario',
 };
 
-const ESTADO_BADGE = {
-    borrador: 'bg-gold/10 text-gold border-gold/30',
-    activo:   'bg-success/10 text-success border-success/30',
-    cerrado:  'bg-surface2 text-muted border-muted/20',
+const BORDER_ESTADO = {
+    activo:   'border-l-success',
+    borrador: 'border-l-muted/30',
+    cerrado:  'border-l-danger/40',
 };
-
-const TOGGLE_LABEL = { borrador: 'Activar', activo: 'Cerrar' };
 
 function ConfirmDeleteModal({ sorteo, onConfirm, onCancel }) {
     return (
@@ -59,25 +57,35 @@ function ConfirmDeleteModal({ sorteo, onConfirm, onCancel }) {
     );
 }
 
-export default function SorteosIndex({ sorteos }) {
-    const { flash } = usePage().props;
-    const [toast, setToast] = useState(null);
-    const [deleteTarget, setDeleteTarget] = useState(null);
+function EstadoBadge({ estado }) {
+    if (estado === 'activo') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-success border border-success/20">
+                <span className="size-1.5 rounded-full bg-success animate-pulse" />
+                Activo
+            </span>
+        );
+    }
+    if (estado === 'borrador') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface2 px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted border border-muted/20">
+                <span className="size-1.5 rounded-full bg-muted/60" />
+                Borrador
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-danger/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-danger/70 border border-danger/20 line-through decoration-danger/40">
+            Cerrado
+        </span>
+    );
+}
 
-    useEffect(() => {
-        const msg = flash?.success || flash?.error;
-        if (!msg) return;
-        setToast({ msg, type: flash.success ? 'success' : 'error' });
-        const t = setTimeout(() => setToast(null), 4000);
-        return () => clearTimeout(t);
-    }, [flash]);
+export default function SorteosIndex({ sorteos }) {
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     function toggleEstado(sorteo) {
         router.patch(`/admin/sorteos/${sorteo.id}/toggle-estado`, {}, { preserveScroll: true });
-    }
-
-    function destroy(sorteo) {
-        setDeleteTarget(sorteo);
     }
 
     function confirmDelete() {
@@ -95,23 +103,18 @@ export default function SorteosIndex({ sorteos }) {
                 />
             )}
 
-            {toast && (
-                <div className={`fixed right-4 top-4 z-50 border border-gold/30 bg-surface px-4 py-3 text-sm text-cream shadow-xl ${
-                    toast.type === 'success' ? 'border-l-4 border-l-success' : 'border-l-4 border-l-danger'
-                }`}>
-                    {toast.msg}
-                </div>
-            )}
-
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="font-display text-4xl text-cream">SORTEOS</h1>
                     <button
                         type="button"
                         onClick={() => router.visit('/admin/sorteos/create')}
-                        className="bg-gold px-4 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light"
+                        className="flex items-center gap-2 bg-gold px-4 py-2 text-sm font-bold uppercase tracking-wider text-bg transition-colors hover:bg-gold-light"
                     >
-                        + Nuevo sorteo
+                        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Nuevo sorteo
                     </button>
                 </div>
 
@@ -120,29 +123,36 @@ export default function SorteosIndex({ sorteos }) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="bg-surface2 text-left">
-                                    {['Nombre','Tipo','Fecha','Precio','Participantes','Estado','Acciones'].map((h, i) => (
-                                        <th key={h} className={`px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted ${
-                                            i === 1 ? 'hidden sm:table-cell' :
-                                            i === 2 ? 'hidden md:table-cell' :
-                                            i === 3 ? 'hidden lg:table-cell' :
-                                            i === 4 ? 'hidden xl:table-cell' :
-                                            i === 6 ? 'text-right' : ''
-                                        }`}>
-                                            {h}
-                                        </th>
-                                    ))}
+                                    <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted">Nombre</th>
+                                    <th className="hidden px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted sm:table-cell">Tipo</th>
+                                    <th className="hidden px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted md:table-cell">Fecha</th>
+                                    <th className="hidden px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted lg:table-cell">Precio</th>
+                                    <th className="hidden px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted xl:table-cell">Participantes</th>
+                                    <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted">Estado</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sorteos.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-4 py-10 text-center text-muted">
-                                            No hay sorteos creados aún.
+                                        <td colSpan={7} className="px-4 py-16 text-center">
+                                            <div className="flex flex-col items-center gap-3 text-muted">
+                                                <svg className="size-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 5H9a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2zm-6 5h6m-6 3h4" />
+                                                </svg>
+                                                <p className="text-sm font-medium">No hay sorteos creados aún</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : (
                                     sorteos.map((s) => (
-                                        <tr key={s.id} className="border-b border-gold/10 transition-colors hover:bg-surface2/50">
+                                        <tr
+                                            key={s.id}
+                                            className={[
+                                                'border-b border-gold/10 border-l-2 transition-colors duration-150 hover:bg-surface2',
+                                                BORDER_ESTADO[s.estado] ?? 'border-l-transparent',
+                                            ].join(' ')}
+                                        >
                                             <td className="px-4 py-3 font-medium text-cream">{s.nombre}</td>
                                             <td className="hidden px-4 py-3 text-content sm:table-cell">
                                                 {TIPO_LABEL[s.tipo] ?? s.tipo}
@@ -159,40 +169,47 @@ export default function SorteosIndex({ sorteos }) {
                                                 {s.participantes_count}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className={`inline-block border px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${ESTADO_BADGE[s.estado] ?? ''}`}>
-                                                    {s.estado}
-                                                </span>
+                                                <EstadoBadge estado={s.estado} />
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         type="button"
                                                         onClick={() => router.visit(`/admin/sorteos/${s.id}/edit`)}
-                                                        className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:border-gold hover:text-cream"
+                                                        className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors duration-150 hover:border-gold hover:text-cream"
                                                     >
                                                         Editar
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => router.visit(`/admin/sorteos/${s.id}/premios`)}
-                                                        className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:border-gold hover:text-cream"
+                                                        className="border border-gold/30 px-2.5 py-1 text-xs font-medium text-muted transition-colors duration-150 hover:border-gold hover:text-cream"
                                                     >
                                                         Premios
                                                     </button>
-                                                    {TOGGLE_LABEL[s.estado] && (
+                                                    {s.estado === 'borrador' && (
                                                         <button
                                                             type="button"
                                                             onClick={() => toggleEstado(s)}
-                                                            className="bg-gold px-2.5 py-1 text-xs font-bold uppercase text-bg transition-colors hover:bg-gold-light"
+                                                            className="bg-success px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white transition-colors duration-150 hover:opacity-90"
                                                         >
-                                                            {TOGGLE_LABEL[s.estado]}
+                                                            Activar
+                                                        </button>
+                                                    )}
+                                                    {s.estado === 'activo' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleEstado(s)}
+                                                            className="border border-danger/50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-danger transition-colors duration-150 hover:bg-danger hover:text-white"
+                                                        >
+                                                            Cerrar
                                                         </button>
                                                     )}
                                                     {(s.estado === 'borrador' || s.participantes_count === 0) && (
                                                         <button
                                                             type="button"
-                                                            onClick={() => destroy(s)}
-                                                            className="border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger transition-colors hover:bg-danger hover:text-white"
+                                                            onClick={() => setDeleteTarget(s)}
+                                                            className="border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger transition-colors duration-150 hover:bg-danger hover:text-white"
                                                         >
                                                             Eliminar
                                                         </button>
