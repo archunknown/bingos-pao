@@ -37,14 +37,14 @@ export default function Landing({ sorteos_activos, ganadores_recientes, config, 
     return (
         <PublicLayout>
             <HeroSection config={config} fechas_sorteos={fechas_sorteos} hay_sorteos={sorteos_activos.length > 0} />
-            <Divider />
-            <StreamSection config={config} />
             {sorteos_activos.length > 0 && (
                 <>
                     <Divider />
                     <SorteosSection sorteos={sorteos_activos} id="sorteos" />
                 </>
             )}
+            <Divider />
+            <StreamSection config={config} />
             {ganadores_recientes.length > 0 && (
                 <>
                     <Divider />
@@ -486,11 +486,15 @@ function SorteoCard({ sorteo }) {
                             <li key={p.id} className="flex items-baseline gap-2 text-xs">
                                 <span className="shrink-0 text-gold">●</span>
                                 <span className="text-content">{p.nombre}</span>
-                                {p.monto != null && (
+                                {p.monto != null ? (
                                     <span className="ml-auto font-bold text-gold">
                                         S/ {Number(p.monto).toFixed(2)}
                                     </span>
-                                )}
+                                ) : p.descripcion_premio ? (
+                                    <span className="ml-auto text-muted">
+                                        {p.descripcion_premio}
+                                    </span>
+                                ) : null}
                             </li>
                         ))}
                         {sorteo.premios.length > 4 && (
