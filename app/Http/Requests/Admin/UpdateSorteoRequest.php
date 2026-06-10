@@ -16,7 +16,7 @@ class UpdateSorteoRequest extends FormRequest
     {
         return [
             'nombre'               => ['required', 'string', 'max:200'],
-            'tipo'                 => ['required', Rule::in(['bingo', 'pozito', 'especial', 'aniversario'])],
+            'tipo'                 => ['required', Rule::in(['sorteo', 'pozito', 'especial', 'aniversario'])],
             'fecha_sorteo'         => ['required', 'date'],
             'precio_participacion' => ['required', 'numeric', 'min:0', 'max:9999999.99'],
             'descripcion'          => ['nullable', 'string', 'max:5000'],

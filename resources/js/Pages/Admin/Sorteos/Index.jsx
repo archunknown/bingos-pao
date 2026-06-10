@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 const TIPO_LABEL = {
-    bingo: 'Bingo', pozito: 'Pozito', especial: 'Especial', aniversario: 'Aniversario',
+    sorteo: 'Sorteo', pozito: 'Pozito', especial: 'Especial', aniversario: 'Aniversario',
 };
 
 const BORDER_ESTADO = {

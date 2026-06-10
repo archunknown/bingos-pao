@@ -5,8 +5,17 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 const TIPO_LABEL = {
-    bingo: 'BINGO', pozito: 'POZITO', especial: 'ESPECIAL', aniversario: 'ANIVERSARIO',
+    sorteo: 'SORTEO', pozito: 'POZITO', especial: 'ESPECIAL', aniversario: 'ANIVERSARIO',
 };
+
+function pluralizar(nombre) {
+    return nombre.split(' ').map((w) => {
+        const lw = w.toLowerCase();
+        if (lw.endsWith('s')) return lw;
+        if (/[aeiouáéíóú]$/i.test(lw)) return lw + 's';
+        return lw + 'es';
+    }).join(' ');
+}
 
 const PASOS = [
     { n: 1, texto: 'Elige el monto y realiza el pago por Yape o Plin al titular indicado.' },
@@ -132,21 +141,20 @@ export default function SorteoPublico({ sorteo, config }) {
                                 </div>
                                 <ul className="divide-y divide-gold/10">
                                     {sorteo.premios.map((p) => (
-                                        <li key={p.id} className="flex items-center gap-3 px-5 py-3.5">
-                                            <span className="shrink-0 border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[10px] font-bold text-gold">
-                                                ×{p.cantidad}
-                                            </span>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm text-cream">{p.nombre}</p>
-                                                {p.descripcion_premio && (
-                                                    <p className="text-xs text-muted">{p.descripcion_premio}</p>
-                                                )}
-                                            </div>
-                                            {p.monto != null && (
-                                                <span className="shrink-0 font-bold text-gold">
-                                                    S/ {Number(p.monto).toFixed(2)}
+                                        <li key={p.id} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                                            <p className="text-sm text-cream">
+                                                <span className="text-base font-bold text-gold">{p.cantidad}</span>
+                                                {'  '} 
+                                                {p.cantidad > 1 ? pluralizar(p.nombre) : p.nombre}
+                                            </p>
+                                            {p.monto != null ? (
+                                                <span className="shrink-0 font-bold text-gold">S/ {Number(p.monto).toFixed(2)}
                                                 </span>
-                                            )}
+                                            ) : p.descripcion_premio ? (
+                                                <span className="shrink-0 text-sm text-muted">
+                                                    {p.descripcion_premio}
+                                                </span>
+                                            ) : null}
                                         </li>
                                     ))}
                                 </ul>
