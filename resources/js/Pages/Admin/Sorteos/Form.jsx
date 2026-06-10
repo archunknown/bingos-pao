@@ -3,7 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 
 const TIPOS = [
-    { value: 'bingo',       label: 'Bingo' },
+    { value: 'sorteo',      label: 'Sorteo' },
     { value: 'pozito',      label: 'Pozito' },
     { value: 'especial',    label: 'Especial' },
     { value: 'aniversario', label: 'Aniversario' },
@@ -16,7 +16,7 @@ export default function SorteoForm({ sorteo }) {
 
     const { data, setData, post, put, processing, errors } = useForm({
         nombre:               sorteo?.nombre               ?? '',
-        tipo:                 sorteo?.tipo                 ?? 'bingo',
+        tipo:                 sorteo?.tipo                 ?? 'sorteo',
         fecha_sorteo:         sorteo?.fecha_sorteo         ? toLocalInput(sorteo.fecha_sorteo) : '',
         precio_participacion: sorteo?.precio_participacion ?? '',
         descripcion:          sorteo?.descripcion          ?? '',

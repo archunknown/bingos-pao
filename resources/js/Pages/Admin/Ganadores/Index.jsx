@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function GanadoresIndex({ sorteos, ganadores }) {
     function togglePublicado(ganador) {
@@ -180,23 +180,13 @@ function RegistrarGanadorForm({ sorteos }) {
                 </Field>
 
                 <Field label="Participante confirmado" error={errors.participante_id}>
-                    <select
+                    <ParticipanteCombobox
+                        participantes={participantes}
                         value={data.participante_id}
-                        onChange={(e) => setData('participante_id', e.target.value)}
-                        disabled={participantes.length === 0}
-                        className={selectCls(errors.participante_id)}
-                    >
-                        <option value="">
-                            {data.sorteo_id
-                                ? participantes.length === 0 ? 'Sin confirmados' : 'Seleccionar participante'
-                                : 'Primero elige un sorteo'}
-                        </option>
-                        {participantes.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.numero_registro} — {p.nombres} {p.apellidos}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(id) => setData('participante_id', id)}
+                        disabled={!data.sorteo_id}
+                        error={errors.participante_id}
+                    />
                 </Field>
 
                 <Field label="Premio" error={errors.premio_id}>
@@ -233,6 +223,95 @@ function RegistrarGanadorForm({ sorteos }) {
                 </div>
             </form>
         </section>
+    );
+}
+
+function ParticipanteCombobox({ participantes, value, onChange, disabled, error }) {
+    const [inputValue, setInputValue] = useState('');
+    const [open, setOpen]             = useState(false);
+    const containerRef                = useRef(null);
+
+    useEffect(() => {
+        if (!value) setInputValue('');
+    }, [value]);
+
+    useEffect(() => {
+        function handleOutside(e) {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleOutside);
+        return () => document.removeEventListener('mousedown', handleOutside);
+    }, []);
+
+    const filtered = (
+        inputValue.trim() === ''
+            ? participantes.slice(0, 60)
+            : participantes.filter((p) => {
+                const q = inputValue.toLowerCase();
+                return (
+                    `${p.nombres} ${p.apellidos}`.toLowerCase().includes(q) ||
+                    String(p.numero_registro).toLowerCase().includes(q)
+                );
+              }).slice(0, 60)
+    );
+
+    function handleChange(e) {
+        setInputValue(e.target.value);
+        if (value) onChange('');
+        setOpen(true);
+    }
+
+    function handleFocus() {
+        if (value) { setInputValue(''); onChange(''); }
+        setOpen(true);
+    }
+
+    function select(p) {
+        onChange(String(p.id));
+        setInputValue(`${p.numero_registro} — ${p.nombres} ${p.apellidos}`);
+        setOpen(false);
+    }
+
+    const inputCls = [
+        'w-full border bg-surface2 px-3 py-2.5 text-sm text-cream outline-none transition-colors disabled:opacity-40',
+        error ? 'border-danger' : 'border-gold/20 focus:border-gold',
+    ].join(' ');
+
+    const placeholder = disabled
+        ? 'Primero elige un sorteo'
+        : participantes.length === 0 && !disabled
+            ? 'Sin confirmados'
+            : 'Buscar por nombre o N° registro…';
+
+    return (
+        <div ref={containerRef} className="relative">
+            <input
+                type="text"
+                value={inputValue}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                disabled={disabled}
+                placeholder={placeholder}
+                autoComplete="off"
+                className={inputCls}
+            />
+            {open && filtered.length > 0 && (
+                <ul className="absolute z-20 mt-0.5 max-h-56 w-full overflow-y-auto border border-gold/30 bg-surface shadow-xl">
+                    {filtered.map((p) => (
+                        <li
+                            key={p.id}
+                            onMouseDown={(e) => { e.preventDefault(); select(p); }}
+                            className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-gold/10"
+                        >
+                            <span className="shrink-0 font-bold text-gold">{p.numero_registro}</span>
+                            <span className="text-cream">{p.nombres} {p.apellidos}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     );
 }
 

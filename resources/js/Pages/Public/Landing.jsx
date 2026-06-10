@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 const TIPO_LABEL = {
-    bingo: 'BINGO', pozito: 'POZITO', especial: 'ESPECIAL', aniversario: 'ANIVERSARIO',
+    sorteo: 'SORTEO', pozito: 'POZITO', especial: 'ESPECIAL', aniversario: 'ANIVERSARIO',
 };
 
 const heroContainer = {
@@ -128,7 +128,7 @@ function HeroSection({ config, fechas_sorteos, hay_sorteos }) {
                     </span>
                 </motion.h1>
 
-                <motion.p variants={heroItem} className="mx-auto mt-6 max-w-lg font-light text-muted">
+                <motion.p variants={heroItem} className="mx-auto mt-6 max-w-lg text-base text-cream/80">
                     Participa en nuestros sorteos y bingos en vivo por Facebook. Registra tu
                     comprobante y espera el resultado en directo.
                 </motion.p>
