@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Configuracion;
 use App\Models\Participante;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
@@ -27,17 +28,22 @@ class HandleInertiaRequests extends Middleware
 
     private static function configPublica(): array
     {
-        $textos = ['nombre_negocio', 'titular_pago', 'whatsapp_contacto'];
+        return Cache::store('array')->rememberForever(
+            'config_publica_inertia',
+            function () {
+                $textos = ['nombre_negocio', 'titular_pago', 'whatsapp_contacto'];
 
-        $config = [];
-        foreach ($textos as $clave) {
-            $config[$clave] = Configuracion::get($clave) ?? '';
-        }
+                $config = [];
+                foreach ($textos as $clave) {
+                    $config[$clave] = Configuracion::get($clave) ?? '';
+                }
 
-        $logoPath = Configuracion::get('logo_path');
-        $config['logo_url'] = $logoPath ? Storage::url($logoPath) : null;
+                $logoPath = Configuracion::get('logo_path');
+                $config['logo_url'] = $logoPath ? Storage::url($logoPath) : null;
 
-        return $config;
+                return $config;
+            }
+        );
     }
 
     /**
